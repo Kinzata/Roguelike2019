@@ -13,7 +13,7 @@ public class Entity
     public Vector3Int position;
     public Sprite sprite;
     public Color color;
-    public Tile tile;
+    public WorldTile tile;
 
     public Entity(Vector3Int position, Sprite sprite, Color color)
     {
@@ -21,7 +21,7 @@ public class Entity
         this.sprite = sprite;
         this.color = color;
         
-        tile = Tile.CreateInstance<Tile>();
+        tile = Tile.CreateInstance<WorldTile>();
         tile.sprite = sprite;
         tile.color = color;
     }
