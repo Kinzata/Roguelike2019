@@ -13,11 +13,9 @@ public class Entity
     public Vector3Int position;
     public Sprite sprite;
     public Color color;
+    public Tile tile;
 
-    private Tile tile;
-    private Tilemap entityMap;
-
-    public Entity(Vector3Int position, Sprite sprite, Color color, Tilemap entityMap)
+    public Entity(Vector3Int position, Sprite sprite, Color color)
     {
         this.position = position;
         this.sprite = sprite;
@@ -26,20 +24,12 @@ public class Entity
         tile = Tile.CreateInstance<Tile>();
         tile.sprite = sprite;
         tile.color = color;
-
-        this.entityMap = entityMap;
-
-        this.entityMap.SetTile(position, tile);
     }
 
     public Vector3Int Move(int dx, int dy)
-    {
-        entityMap.SetTile(entityMap.WorldToCell(position), null);
-        
+    {        
         position.x += dx;
         position.y += dy;
-
-        entityMap.SetTile(entityMap.WorldToCell(position), tile);
 
         return position;
     }
