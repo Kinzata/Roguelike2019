@@ -72,17 +72,18 @@ public class GroundMap : ScriptableObject
             var width = roomSizeRange.RandomValue();
             var height = roomSizeRange.RandomValue();
 
-            var x = Random.Range(0, mapWidth - width );
-            var y = Random.Range(0, mapHeight - height);
+            var x = Random.Range(0, mapWidth - width - 1);
+            var y = Random.Range(0, mapHeight - height - 1);
 
             var rect = new Rect(x, y, width, height);
             var newRoom = new Room(rect, this);
 
-            var intersectedRoom = rooms.Select(room => {
-                return room.Intersects(newRoom) ? room : null;
-            }).FirstOrDefault();
+            var intersectedRoom = rooms.Where(room =>
+            {
+                return newRoom.Intersects(room);
+            }).Select(room => room).FirstOrDefault();
 
-            if( intersectedRoom != null ) { continue; }
+            if (intersectedRoom != null) { continue; }
 
             newRoom.BuildRoom();
 
@@ -104,7 +105,7 @@ public class GroundMap : ScriptableObject
             rooms.Add(newRoom);
             roomCounter++;
         }
-
+        Debug.Log("Rooms: " + rooms.Count());
         return rooms.First().center;
     }
 

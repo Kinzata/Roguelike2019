@@ -43,6 +43,8 @@ public class GameManager : MonoBehaviour
         player = new Entity(new Vector3Int(startLocation.x, startLocation.y, 0), playerSprite, Color.green);
         var npc = new Entity(new Vector3Int(2, 2, 0), npcSprite, Color.yellow);
 
+        Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
+
         entities.Add(npc);
         entities.Add(player);
 

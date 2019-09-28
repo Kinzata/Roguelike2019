@@ -717,5 +717,20 @@ PrefabInstance:
       propertyPath: playerSpriteId
       value: 27
       objectReference: {fileID: 0}
+    - target: {fileID: 6947487390095096229, guid: 852468c71e4bebb4daa52cf553b23f89,
+        type: 3}
+      propertyPath: maxRooms
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 6947487390095096229, guid: 852468c71e4bebb4daa52cf553b23f89,
+        type: 3}
+      propertyPath: mapWidth
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 6947487390095096229, guid: 852468c71e4bebb4daa52cf553b23f89,
+        type: 3}
+      propertyPath: mapHeight
+      value: 45
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 852468c71e4bebb4daa52cf553b23f89, type: 3}
