@@ -8,6 +8,7 @@ public class WorldTile : Tile
     public bool blocked;
     public bool blockSight;
     public bool isVisible;
+    public bool isExplored;
 
     public float darkTileModifier = .3f;
 

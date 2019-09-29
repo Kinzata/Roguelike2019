@@ -19,6 +19,7 @@ public class FieldOfViewSystem {
 
     public void SetVisible(int x, int y){
         if( !map.isTileValid(x,y) ) { return; }
+        map.tiles[x,y].isExplored = true;
         map.tiles[x,y].isVisible = true;
     }
 

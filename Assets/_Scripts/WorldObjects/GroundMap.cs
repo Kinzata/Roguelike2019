@@ -39,6 +39,7 @@ public class GroundMap : ScriptableObject
             for (int y = 0; y < height; y++)
             {
                 var tile = tiles[x, y];
+                if( !tile.isExplored ) { continue; }
                 tile.color = tile.GetColor();
 
                 map.SetTile(new Vector3Int(x, y, 0), tile);

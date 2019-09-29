@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
 
         fovSystem = new FieldOfViewSystem(groundMapObject);
-        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 50);
+        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
 
         entities.Add(npc);
         entities.Add(player);
@@ -116,7 +116,7 @@ public class GameManager : MonoBehaviour
             if( !groundMapObject.IsBlocked(player.position.x + playerNextMoveDirection.x, player.position.y + playerNextMoveDirection.y)){
                 player.Move(playerNextMoveDirection.x, playerNextMoveDirection.y);
                 Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
-                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 50);
+                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
                 groundMapObject.UpdateTiles(groundMap);
             }
             playerNextMoveDirection = Vector2Int.zero;
