@@ -15,6 +15,7 @@ public class InputManager : MonoBehaviour
         {
             var gameEvent = EventManager.instance.GetGameEvent(EventManager.EventType.PlayerMove);
             Vector2Int direction = Vector2Int.zero;
+            // Cardinals
             if (Input.GetKeyDown(KeyCode.Keypad4))
                 direction.x = -1;
             if (Input.GetKeyDown(KeyCode.Keypad6))
@@ -23,6 +24,25 @@ public class InputManager : MonoBehaviour
                 direction.y = -1;
             if (Input.GetKeyDown(KeyCode.Keypad8))
                 direction.y = 1;
+
+            // Diagonals
+            if (Input.GetKeyDown(KeyCode.Keypad7))
+            {
+                direction.x = -1; direction.y = 1;
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad1))
+            {
+                direction.x = -1; direction.y = -1;
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad3))
+            {
+                direction.x = 1; direction.y = -1;
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad9))
+            {
+                direction.x = 1; direction.y = 1;
+            }
+
             gameEvent.Raise(direction);
         }
     }
