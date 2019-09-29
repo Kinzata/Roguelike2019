@@ -14,12 +14,18 @@ public class Entity
     public Sprite sprite;
     public Color color;
     public WorldTile tile;
+    public bool blocks;
+    public string name;
+    public bool enemy;
 
-    public Entity(Vector3Int position, Sprite sprite, Color color)
+    public Entity(Vector3Int position, Sprite sprite, Color color, bool blocks = false, string name = "mysterious enemy", bool enemy = false)
     {
         this.position = position;
         this.sprite = sprite;
         this.color = color;
+        this.blocks = blocks;
+        this.name = name;
+        this.enemy = enemy;
         
         tile = Tile.CreateInstance<WorldTile>();
         tile.sprite = sprite;

@@ -8,17 +8,20 @@ public class GroundMap : ScriptableObject
 {
     public int width;
     public int height;
+    public Tilemap map;
 
     public WorldTile[,] tiles;
+    public List<Room> rooms;
 
     // TODO: Spritesheet singleton
     public int wallSpriteId = 553;
     public Sprite wallSprite;
 
-    public GroundMap Init(int width, int height)
+    public GroundMap Init(int width, int height, Tilemap map)
     {
         this.width = width;
         this.height = height;
+        this.map = map;
 
         wallSprite = SpriteLoader.instance.LoadSprite(SpriteType.Wall_Stone);
 
@@ -26,7 +29,7 @@ public class GroundMap : ScriptableObject
         return this;
     }
 
-    public void UpdateTiles(Tilemap map)
+    public void UpdateTiles()
     {
         map.ClearAllTiles();
 
@@ -35,7 +38,7 @@ public class GroundMap : ScriptableObject
             for (int y = 0; y < height; y++)
             {
                 var tile = tiles[x, y];
-                if( !tile.isExplored ) { continue; }
+                if (!tile.isExplored) { continue; }
                 tile.color = tile.GetColor();
 
                 map.SetTile(new Vector3Int(x, y, 0), tile);
@@ -61,8 +64,9 @@ public class GroundMap : ScriptableObject
         return false;
     }
 
-    public bool isTileVisible(int x, int y){
-        return tiles[x,y].isVisible;
+    public bool isTileVisible(int x, int y)
+    {
+        return tiles[x, y].isVisible;
     }
     public bool isTileValid(int x, int y)
     {
@@ -71,7 +75,7 @@ public class GroundMap : ScriptableObject
 
     public Vector2Int MakeMap(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight)
     {
-        var rooms = new List<Room>();
+        rooms = new List<Room>();
         var counter = 0;
         var roomCounter = 0;
         while (counter++ < maxRooms)
@@ -141,6 +145,64 @@ public class GroundMap : ScriptableObject
         }
     }
 
+    public IList<Entity> FillRoomsWithEnemies(IList<Entity> entities, int maxMonstersPerRoom)
+    {
+
+        foreach (Room room in rooms)
+        {
+            entities = FillRoomWithEnemies(entities, room, maxMonstersPerRoom);
+        }
+
+        return entities;
+    }
+
+    public IList<Entity> FillRoomWithEnemies(IList<Entity> entities, Room room, int maxMonsters)
+    {
+        var numMonsters = Random.Range(0, maxMonsters + 1);
+
+        foreach (int i in 1.To(numMonsters))
+        {
+            var position = room.GetRandomLocation();
+
+            var entityExistsAtPosition = entities
+                                            .Where(e => e.position.x == position.x && e.position.y == position.y)
+                                            .Select(e => e)
+                                            .Any();
+
+            if (!entityExistsAtPosition)
+            {
+                var entity = GenerateEnemy(position);
+                entities.Add(entity);
+            }
+        }
+
+        return entities;
+    }
+
+    public Entity GenerateEnemy((int x, int y) position)
+    {
+        Sprite sprite;
+        Color color;
+        string name;
+
+        if (Random.value >= .8f)
+        {
+            // Generate Orc
+            sprite = SpriteLoader.instance.LoadSprite(SpriteType.Monster_Orc);
+            color = new Color(.8f, 0, 0, 1f);
+            name = "orc";
+        }
+        else
+        {
+            // Generate Troll
+            sprite = SpriteLoader.instance.LoadSprite(SpriteType.Monster_Troll);
+            color = new Color(.8f, 0, 0, 1f);
+            name = "troll";
+        }
+
+        return new Entity(new Vector3Int(position.x, position.y, 0), sprite, color, blocks: true, name: name, enemy: true);
+    }
+
     void InitializeTiles()
     {
         tiles = new WorldTile[width, height];
@@ -159,7 +221,7 @@ public class GroundMap : ScriptableObject
     public void SetTileToFloor(WorldTile tile)
     {
         tile.sprite = SpriteLoader.instance.LoadSprite(SpriteType.Floor_Grass);
-        tile.colorLight = new Color(0.250f, 0.466f, 0.270f, 1);
+        tile.colorLight = new Color(0.250f, 0.466f, 0.270f, .5f);
         tile.blocked = false;
         tile.blockSight = false;
     }

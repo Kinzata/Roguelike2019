@@ -36,6 +36,10 @@ public class SpriteLoader : MonoBehaviour
                 return spriteSheet[553];
             case SpriteType.Floor_Grass:
                 return spriteSheet[floor_grass_sprites[Random.Range(0, floor_grass_sprites.Length)]];
+            case SpriteType.Monster_Orc:
+                return spriteSheet[89];
+            case SpriteType.Monster_Troll:
+                return spriteSheet[92];
             default:
                 throw new System.Exception("Bad sprite sheet enum type.");
         }

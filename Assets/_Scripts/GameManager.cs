@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -8,12 +9,15 @@ public class GameManager : MonoBehaviour
 {
     private Entity player;
     private GameEventListener moveListener;
-    private Tilemap entityMap;
     private Vector2Int playerNextMoveDirection;
+    private GameState gameState;
 
-    private IList<Entity> entities = new List<Entity>();
-    private Tilemap groundMap;
-    private GroundMap groundMapObject;
+    [Header("Entites")]
+    private EntityMap entityMap;
+
+
+    [Header("Floor")]
+    private GroundMap groundMap;
 
     [Header("World Properties")]
     public int mapWidth = 80;
@@ -32,28 +36,30 @@ public class GameManager : MonoBehaviour
 
         Application.targetFrameRate = 120;
 
-        entityMap = GameObject.Find(TileMapType.EntityMap.Name()).GetComponent<Tilemap>();
-        groundMap = GameObject.Find(TileMapType.GroundMap.Name()).GetComponent<Tilemap>();
-        groundMapObject = ScriptableObject.CreateInstance<GroundMap>().Init(mapWidth, mapHeight);
-        var startLocation = groundMapObject.MakeMap(maxRooms, roomSizeRange, mapWidth, mapHeight);
+        var groundTileMap = GameObject.Find(TileMapType.GroundMap.Name()).GetComponent<Tilemap>();
+        groundMap = ScriptableObject.CreateInstance<GroundMap>().Init(mapWidth, mapHeight, groundTileMap);
+        var startLocation = groundMap.MakeMap(maxRooms, roomSizeRange, mapWidth, mapHeight);
+
+        var entityTileMap = GameObject.Find(TileMapType.EntityMap.Name()).GetComponent<Tilemap>();
+        entityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityTileMap, groundMap);
 
         var spriteLoader = SpriteLoader.instance;
         var playerSprite = spriteLoader.LoadSprite(SpriteType.Soldier_Sword);
-        var npcSprite = spriteLoader.LoadSprite(SpriteType.Soldier_Spear);
 
         player = new Entity(new Vector3Int(startLocation.x, startLocation.y, 0), playerSprite, Color.green);
-        var npc = new Entity(new Vector3Int(startLocation.x-1, startLocation.y-1, 0), npcSprite, Color.yellow);
 
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
 
-        fovSystem = new FieldOfViewSystem(groundMapObject);
+        fovSystem = new FieldOfViewSystem(groundMap);
         fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
 
-        entities.Add(npc);
-        entities.Add(player);
+        groundMap.FillRoomsWithEnemies(entityMap.GetEntities(), 3);
+        entityMap.AddEntity(player);
 
         InitEventListeners();
-        groundMapObject.UpdateTiles(groundMap);
+        groundMap.UpdateTiles();
+
+        gameState = GameState.Turn_Player;
     }
 
     // Update is called once per frame
@@ -62,36 +68,32 @@ public class GameManager : MonoBehaviour
         ClearAll();
 
         PlayerMove();
+        EnemyMove();
 
         RenderAll();
     }
 
     void RenderAll()
     {
-        foreach (var entity in entities)
-        {
-            DrawEntity(entity);
-        }
-    }
-
-    void DrawEntity(Entity entity)
-    {
-        if( groundMapObject.isTileVisible(entity.position.x, entity.position.y)){
-            entityMap.SetTile(entity.position, entity.tile);
-        }
+        entityMap.RenderAll();
     }
 
     public void ClearAll()
     {
-        foreach (var entity in entities)
-        {
-            ClearEntity(entity);
-        }
+        entityMap.ClearAll();
     }
 
-    void ClearEntity(Entity entity)
+    void EnemyMove()
     {
-        entityMap.SetTile(entity.position, null);
+        if (gameState == GameState.Turn_Enemy)
+        {
+            foreach (Entity enemy in entityMap.GetEnemies())
+            {
+                Debug.Log("The " + enemy.name + " ponders the meaning of it's existence");
+            }
+
+            gameState = GameState.Turn_Player;
+        }
     }
 
     /** Player specific event functions */
@@ -109,13 +111,28 @@ public class GameManager : MonoBehaviour
         playerNextMoveDirection = direction;
     }
 
-    void PlayerMove(){
-        if( playerNextMoveDirection != Vector2Int.zero ){
-            if( !groundMapObject.IsBlocked(player.position.x + playerNextMoveDirection.x, player.position.y + playerNextMoveDirection.y)){
-                player.Move(playerNextMoveDirection.x, playerNextMoveDirection.y);
-                Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
-                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
-                groundMapObject.UpdateTiles(groundMap);
+    void PlayerMove()
+    {
+        if (gameState == GameState.Turn_Player && playerNextMoveDirection != Vector2Int.zero)
+        {
+            (int x, int y) newPosition = (player.position.x + playerNextMoveDirection.x, player.position.y + playerNextMoveDirection.y);
+
+            if (!groundMap.IsBlocked(newPosition.x, newPosition.y))
+            {
+                var target = entityMap.GetBlockingEntityAtPosition(newPosition.x, newPosition.y);
+
+                if (target != null) { Debug.Log("You kick the " + target.name + " in the shins!"); }
+                else
+                {
+                    player.Move(playerNextMoveDirection.x, playerNextMoveDirection.y);
+                    Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
+                    fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
+                    groundMap.UpdateTiles();
+                }
+
+                // Player ends their turn ONLY IF THEY ACTUALLY DO SOMETHING
+                // Attempting to move into a wall, should not waste a turn (unless they attack it)
+                gameState = GameState.Turn_Enemy;
             }
             playerNextMoveDirection = Vector2Int.zero;
         }

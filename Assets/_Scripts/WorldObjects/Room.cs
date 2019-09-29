@@ -30,6 +30,12 @@ public class Room
                rect.yMin <= other.rect.yMax && rect.yMax >= other.rect.yMin);
     }
 
+    public (int x, int y) GetRandomLocation(){
+        var x = Random.Range((int)rect.xMin+1, (int)rect.xMax);
+        var y = Random.Range((int)rect.yMin+1, (int)rect.yMax);
+        return (x,y);
+    }
+
     public Room BuildRoom()
     {
         for (int x = (int)rect.xMin + 1; x < (int)rect.xMax; x++)
