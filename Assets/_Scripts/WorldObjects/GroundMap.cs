@@ -64,6 +64,9 @@ public class GroundMap : ScriptableObject
         return false;
     }
 
+    public bool isTileVisible(int x, int y){
+        return tiles[x,y].isVisible;
+    }
     public bool isTileValid(int x, int y)
     {
         return x >= 0 && x < tiles.GetLength(0) && y >= 0 && y < tiles.GetLength(1);

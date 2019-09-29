@@ -44,12 +44,12 @@ public class GameManager : MonoBehaviour
         var npcSprite = spriteSheet[npcSpriteId];
 
         player = new Entity(new Vector3Int(startLocation.x, startLocation.y, 0), playerSprite, Color.green);
-        var npc = new Entity(new Vector3Int(2, 2, 0), npcSprite, Color.yellow);
+        var npc = new Entity(new Vector3Int(startLocation.x-1, startLocation.y-1, 0), npcSprite, Color.yellow);
 
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
 
         fovSystem = new FieldOfViewSystem(groundMapObject);
-        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 5);
+        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 50);
 
         entities.Add(npc);
         entities.Add(player);
@@ -78,7 +78,9 @@ public class GameManager : MonoBehaviour
 
     void DrawEntity(Entity entity)
     {
-        entityMap.SetTile(entity.position, entity.tile);
+        if( groundMapObject.isTileVisible(entity.position.x, entity.position.y)){
+            entityMap.SetTile(entity.position, entity.tile);
+        }
     }
 
     public void ClearAll()
@@ -114,7 +116,7 @@ public class GameManager : MonoBehaviour
             if( !groundMapObject.IsBlocked(player.position.x + playerNextMoveDirection.x, player.position.y + playerNextMoveDirection.y)){
                 player.Move(playerNextMoveDirection.x, playerNextMoveDirection.y);
                 Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
-                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 5);
+                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 50);
                 groundMapObject.UpdateTiles(groundMap);
             }
             playerNextMoveDirection = Vector2Int.zero;
