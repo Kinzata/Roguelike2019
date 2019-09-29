@@ -13,12 +13,19 @@ public class GroundMap : ScriptableObject
 
     // TODO: Spritesheet singleton
     public int wallSpriteId = 553;
+    public Sprite wallSprite;
     public int floorSpriteId = 4;
+    public Sprite floorSprite;
 
     public GroundMap Init(int width, int height)
     {
         this.width = width;
         this.height = height;
+
+        var spriteSheet = Resources.LoadAll<Sprite>("spritesheet");
+        wallSprite = spriteSheet[wallSpriteId];
+        floorSprite = spriteSheet[floorSpriteId];
+
         InitializeTiles();
         return this;
     }
@@ -27,28 +34,23 @@ public class GroundMap : ScriptableObject
     {
         map.ClearAllTiles();
 
-        var spriteSheet = Resources.LoadAll<Sprite>("spritesheet");
-        var wallSprite = spriteSheet[wallSpriteId];
-        var floorSprite = spriteSheet[floorSpriteId];
-
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
                 var tile = tiles[x, y];
-                if (tile.blockSight)
-                {
-                    tile.sprite = wallSprite;
-                    tile.color = Color.gray;
-                    map.SetTile(new Vector3Int(x, y, 0), tile);
-                }
-                else
-                {
-                    tile.sprite = floorSprite;
-                    tile.color = new Color(0.250f, 0.466f, 0.270f, 1);
-                    map.SetTile(new Vector3Int(x, y, 0), tile);
-                }
+                tile.color = tile.GetColor();
+
+                map.SetTile(new Vector3Int(x, y, 0), tile);
             }
+        }
+    }
+
+    public void ClearVisibility()
+    {
+        foreach (WorldTile tile in tiles)
+        {
+            tile.isVisible = false;
         }
     }
 
@@ -60,6 +62,11 @@ public class GroundMap : ScriptableObject
         }
 
         return false;
+    }
+
+    public bool isTileValid(int x, int y)
+    {
+        return x >= 0 && x < tiles.GetLength(0) && y >= 0 && y < tiles.GetLength(1);
     }
 
     public Vector2Int MakeMap(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight)
@@ -120,8 +127,7 @@ public class GroundMap : ScriptableObject
         int max = Mathf.Max(x1, x2);
         for (int x = min; x <= max; x++)
         {
-            tiles[x, y].blocked = false;
-            tiles[x, y].blockSight = false;
+            SetTileToFloor(tiles[x, y]);
         }
     }
 
@@ -131,8 +137,7 @@ public class GroundMap : ScriptableObject
         int max = Mathf.Max(y1, y2);
         for (int y = min; y <= max; y++)
         {
-            tiles[x, y].blocked = false;
-            tiles[x, y].blockSight = false;
+            SetTileToFloor(tiles[x, y]);
         }
     }
 
@@ -143,9 +148,19 @@ public class GroundMap : ScriptableObject
         {
             for (int y = 0; y < height; y++)
             {
-                tiles[x, y] = ScriptableObject.CreateInstance<WorldTile>().Init(true);
+                var tile = ScriptableObject.CreateInstance<WorldTile>().Init(true);
+                tile.sprite = wallSprite;
+                tile.colorLight = Color.gray;
+                tiles[x, y] = tile;
             }
         }
+    }
 
+    public void SetTileToFloor(WorldTile tile)
+    {
+        tile.sprite = floorSprite;
+        tile.colorLight = new Color(0.250f, 0.466f, 0.270f, 1);
+        tile.blocked = false;
+        tile.blockSight = false;
     }
 }

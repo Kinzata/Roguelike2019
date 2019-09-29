@@ -23,6 +23,9 @@ public class GameManager : MonoBehaviour
     public IntRange roomSizeRange;
     public int maxRooms = 30;
 
+    [Header("Systems")]
+    private FieldOfViewSystem fovSystem;
+
     void Start()
     {
         roomSizeRange = IntRange.CreateInstance<IntRange>();
@@ -44,6 +47,9 @@ public class GameManager : MonoBehaviour
         var npc = new Entity(new Vector3Int(2, 2, 0), npcSprite, Color.yellow);
 
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
+
+        fovSystem = new FieldOfViewSystem(groundMapObject);
+        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 5);
 
         entities.Add(npc);
         entities.Add(player);
@@ -108,6 +114,8 @@ public class GameManager : MonoBehaviour
             if( !groundMapObject.IsBlocked(player.position.x + playerNextMoveDirection.x, player.position.y + playerNextMoveDirection.y)){
                 player.Move(playerNextMoveDirection.x, playerNextMoveDirection.y);
                 Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
+                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 5);
+                groundMapObject.UpdateTiles(groundMap);
             }
             playerNextMoveDirection = Vector2Int.zero;
         }

@@ -10,7 +10,7 @@ public class Room
     public GroundMap map;
     public Vector2Int center;
 
-    public Room (Rect rect, GroundMap map)
+    public Room(Rect rect, GroundMap map)
     {
         this.rect = rect;
         this.map = map;
@@ -18,11 +18,13 @@ public class Room
         this.center = CalculateCenter();
     }
 
-    private Vector2Int CalculateCenter(){
+    private Vector2Int CalculateCenter()
+    {
         return new Vector2Int((int)rect.center.x, (int)rect.center.y);
     }
 
-    public bool Intersects(Room other){
+    public bool Intersects(Room other)
+    {
         return (rect.xMin <= other.rect.xMax && rect.xMax >= other.rect.xMin
             &&
                rect.yMin <= other.rect.yMax && rect.yMax >= other.rect.yMin);
@@ -34,8 +36,7 @@ public class Room
         {
             for (int y = (int)rect.yMin + 1; y < (int)rect.yMax; y++)
             {
-                map.tiles[x, y].blocked = false;
-                map.tiles[x, y].blockSight = false;
+                map.SetTileToFloor(map.tiles[x, y]);
             }
         }
 

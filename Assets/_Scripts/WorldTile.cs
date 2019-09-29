@@ -7,6 +7,12 @@ public class WorldTile : Tile
 {
     public bool blocked;
     public bool blockSight;
+    public bool isVisible;
+
+    public float darkTileModifier = .3f;
+
+    public Color colorLight;
+    
 
     public WorldTile Init(bool blocked, bool? blockSight = null)
     {
@@ -19,5 +25,11 @@ public class WorldTile : Tile
 
         this.blockSight = blockSight.Value;
         return this;
+    }
+
+    public Color GetColor(){
+        return isVisible
+            ? colorLight
+            : new Color(colorLight.r * darkTileModifier, colorLight.g * darkTileModifier, colorLight.b * darkTileModifier, colorLight.a);
     }
 }
