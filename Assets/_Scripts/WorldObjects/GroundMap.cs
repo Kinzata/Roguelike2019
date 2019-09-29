@@ -14,17 +14,13 @@ public class GroundMap : ScriptableObject
     // TODO: Spritesheet singleton
     public int wallSpriteId = 553;
     public Sprite wallSprite;
-    public int floorSpriteId = 4;
-    public Sprite floorSprite;
 
     public GroundMap Init(int width, int height)
     {
         this.width = width;
         this.height = height;
 
-        var spriteSheet = Resources.LoadAll<Sprite>("spritesheet");
-        wallSprite = spriteSheet[wallSpriteId];
-        floorSprite = spriteSheet[floorSpriteId];
+        wallSprite = SpriteLoader.instance.LoadSprite(SpriteType.Wall_Stone);
 
         InitializeTiles();
         return this;
@@ -162,7 +158,7 @@ public class GroundMap : ScriptableObject
 
     public void SetTileToFloor(WorldTile tile)
     {
-        tile.sprite = floorSprite;
+        tile.sprite = SpriteLoader.instance.LoadSprite(SpriteType.Floor_Grass);
         tile.colorLight = new Color(0.250f, 0.466f, 0.270f, 1);
         tile.blocked = false;
         tile.blockSight = false;

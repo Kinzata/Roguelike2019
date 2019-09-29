@@ -7,8 +7,6 @@ using UnityEngine.Tilemaps;
 public class GameManager : MonoBehaviour
 {
     private Entity player;
-    public int playerSpriteId = 27;
-    public int npcSpriteId = 28;
     private GameEventListener moveListener;
     private Tilemap entityMap;
     private Vector2Int playerNextMoveDirection;
@@ -39,9 +37,9 @@ public class GameManager : MonoBehaviour
         groundMapObject = ScriptableObject.CreateInstance<GroundMap>().Init(mapWidth, mapHeight);
         var startLocation = groundMapObject.MakeMap(maxRooms, roomSizeRange, mapWidth, mapHeight);
 
-        var spriteSheet = Resources.LoadAll<Sprite>("spritesheet");
-        var playerSprite = spriteSheet[playerSpriteId];
-        var npcSprite = spriteSheet[npcSpriteId];
+        var spriteLoader = SpriteLoader.instance;
+        var playerSprite = spriteLoader.LoadSprite(SpriteType.Soldier_Sword);
+        var npcSprite = spriteLoader.LoadSprite(SpriteType.Soldier_Spear);
 
         player = new Entity(new Vector3Int(startLocation.x, startLocation.y, 0), playerSprite, Color.green);
         var npc = new Entity(new Vector3Int(startLocation.x-1, startLocation.y-1, 0), npcSprite, Color.yellow);
