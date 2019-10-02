@@ -116,6 +116,7 @@ public class GroundMap : ScriptableObject
             rooms.Add(newRoom);
             roomCounter++;
         }
+        UpdateNavigationMasks();
         Debug.Log("Rooms: " + rooms.Count());
         return rooms.First().center;
     }
@@ -238,5 +239,44 @@ public class GroundMap : ScriptableObject
         tile.colorLight = new Color(0.250f, 0.466f, 0.270f, .5f);
         tile.blocked = false;
         tile.blockSight = false;
+    }
+
+    public void UpdateNavigationMasks()
+    {
+        for (int x = 0; x < tiles.GetLength(0); x++)
+        {
+            for (int y = 0; y < tiles.GetLength(1); y++)
+            {
+                var tile = tiles[x, y];
+
+                // If tile is a wall, we don't care... yet
+                if (tile.blocked) { continue; }
+
+                // N
+                if (isTileValid(x, y + 1) && !tiles[x, y + 1].blocked)
+                { tile.navMask = tile.navMask | Navigation.N; }
+                // NE
+                if (isTileValid(x + 1, y + 1) && !tiles[x + 1, y + 1].blocked)
+                { tile.navMask = tile.navMask | Navigation.NE; }
+                // E 
+                if (isTileValid(x + 1, y) && !tiles[x + 1, y].blocked)
+                { tile.navMask = tile.navMask | Navigation.E; }
+                // SE 
+                if (isTileValid(x + 1, y - 1) && !tiles[x + 1, y - 1].blocked) 
+                { tile.navMask = tile.navMask | Navigation.SE; }
+                // S
+                if (isTileValid(x, y - 1) && !tiles[x, y - 1].blocked)
+                { tile.navMask = tile.navMask | Navigation.S; }
+                // SW
+                if (isTileValid(x - 1, y - 1) && !tiles[x - 1, y - 1].blocked)
+                { tile.navMask = tile.navMask | Navigation.SW; }
+                // W
+                if (isTileValid(x - 1, y) && !tiles[x - 1, y].blocked)
+                { tile.navMask = tile.navMask | Navigation.W; }
+                // NW
+                if (isTileValid(x - 1, y + 1) && !tiles[x - 1, y + 1].blocked)
+                { tile.navMask = tile.navMask | Navigation.NW; }
+            }
+        }
     }
 }

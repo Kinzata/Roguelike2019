@@ -13,6 +13,8 @@ public class WorldTile : Tile
     public float darkTileModifier = .3f;
 
     public Color colorLight;
+
+    public Navigation navMask = 0;
     
 
     public WorldTile Init(bool blocked, bool? blockSight = null)
