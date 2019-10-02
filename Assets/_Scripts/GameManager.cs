@@ -46,7 +46,8 @@ public class GameManager : MonoBehaviour
         var spriteLoader = SpriteLoader.instance;
         var playerSprite = spriteLoader.LoadSprite(SpriteType.Soldier_Sword);
 
-        player = new Entity(new Vector3Int(startLocation.x, startLocation.y, 0), playerSprite, Color.green);
+        var fighter = new Fighter(30, 2, 5);
+        player = new Entity(new Vector3Int(startLocation.x, startLocation.y, 0), playerSprite, Color.green, fighter: fighter);
 
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
 
@@ -87,9 +88,9 @@ public class GameManager : MonoBehaviour
     {
         if (gameState == GameState.Turn_Enemy)
         {
-            foreach (Entity enemy in entityMap.GetEnemies())
+            foreach (BasicMonsterAi enemy in entityMap.GetEnemies())
             {
-                Debug.Log("The " + enemy.name + " ponders the meaning of it's existence");
+                enemy.TakeTurn();
             }
 
             gameState = GameState.Turn_Player;

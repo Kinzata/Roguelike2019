@@ -184,13 +184,17 @@ public class GroundMap : ScriptableObject
         Sprite sprite;
         Color color;
         string name;
+        Fighter fighter;
+        BasicMonsterAi ai;
 
-        if (Random.value >= .8f)
+        if (Random.value <= .8f)
         {
             // Generate Orc
             sprite = SpriteLoader.instance.LoadSprite(SpriteType.Monster_Orc);
             color = new Color(.8f, 0, 0, 1f);
             name = "orc";
+            fighter = new Fighter(10, 0, 3);
+            ai = new BasicMonsterAi();
         }
         else
         {
@@ -198,9 +202,19 @@ public class GroundMap : ScriptableObject
             sprite = SpriteLoader.instance.LoadSprite(SpriteType.Monster_Troll);
             color = new Color(.8f, 0, 0, 1f);
             name = "troll";
+            fighter = new Fighter(16, 1, 4);
+            ai = new BasicMonsterAi();
         }
 
-        return new Entity(new Vector3Int(position.x, position.y, 0), sprite, color, blocks: true, name: name, enemy: true);
+        return new Entity(
+            new Vector3Int(position.x, position.y, 0),
+            sprite,
+            color,
+            blocks: true,
+            name: name,
+            enemy: true,
+            fighter: fighter,
+            ai: ai);
     }
 
     void InitializeTiles()

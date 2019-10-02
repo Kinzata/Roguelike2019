@@ -17,8 +17,11 @@ public class Entity
     public bool blocks;
     public string name;
     public bool enemy;
+    public Fighter fighterComponent;
+    public BasicMonsterAi aiComponent;
 
-    public Entity(Vector3Int position, Sprite sprite, Color color, bool blocks = false, string name = "mysterious enemy", bool enemy = false)
+    public Entity(Vector3Int position, Sprite sprite, Color color, bool blocks = false, string name = "mysterious enemy", bool enemy = false,
+        Fighter fighter = null, BasicMonsterAi ai = null)
     {
         this.position = position;
         this.sprite = sprite;
@@ -26,10 +29,20 @@ public class Entity
         this.blocks = blocks;
         this.name = name;
         this.enemy = enemy;
+        this.fighterComponent = fighter;
+        this.aiComponent = ai;
         
         tile = Tile.CreateInstance<WorldTile>();
         tile.sprite = sprite;
         tile.color = color;
+
+        if( fighter != null ) {
+            fighter.owner = this;
+        }
+
+        if( ai != null ){
+            ai.owner = this;
+        }
     }
 
     public Vector3Int Move(int dx, int dy)

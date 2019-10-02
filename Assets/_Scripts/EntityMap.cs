@@ -20,8 +20,8 @@ public class EntityMap : ScriptableObject{
         return entities.Where(e => e.position.x == x && e.position.y == y && e.blocks).FirstOrDefault();
     }
 
-    public IEnumerable<Entity> GetEnemies(){
-        return entities.Where(e => e.enemy == true).Select(e => e);
+    public IEnumerable<BasicMonsterAi> GetEnemies(){
+        return entities.Where(e => e.aiComponent != null).Select(e => e.aiComponent);
     }
 
     public void AddEntity(Entity entity){
