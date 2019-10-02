@@ -24,6 +24,10 @@ public class EntityMap : ScriptableObject{
         return entities.Where(e => e.aiComponent != null).Select(e => e.aiComponent);
     }
 
+    public Entity GetPlayer(){
+        return entities.Where(e => e.playerComponent != null).Select(e => e).FirstOrDefault();
+    }
+
     public void AddEntity(Entity entity){
         entities.Add(entity);
     }

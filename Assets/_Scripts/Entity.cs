@@ -17,11 +17,12 @@ public class Entity
     public bool blocks;
     public string name;
     public bool enemy;
+    public Player playerComponent;
     public Fighter fighterComponent;
     public BasicMonsterAi aiComponent;
 
     public Entity(Vector3Int position, Sprite sprite, Color color, bool blocks = false, string name = "mysterious enemy", bool enemy = false,
-        Fighter fighter = null, BasicMonsterAi ai = null)
+        Player player = null, Fighter fighter = null, BasicMonsterAi ai = null)
     {
         this.position = position;
         this.sprite = sprite;
@@ -29,27 +30,60 @@ public class Entity
         this.blocks = blocks;
         this.name = name;
         this.enemy = enemy;
+        this.playerComponent = player;
         this.fighterComponent = fighter;
         this.aiComponent = ai;
-        
+
         tile = Tile.CreateInstance<WorldTile>();
         tile.sprite = sprite;
         tile.color = color;
 
-        if( fighter != null ) {
+        if (player != null)
+        {
+            player.owner = this;
+        }
+
+        if (fighter != null)
+        {
             fighter.owner = this;
         }
 
-        if( ai != null ){
+        if (ai != null)
+        {
             ai.owner = this;
         }
     }
 
     public Vector3Int Move(int dx, int dy)
-    {        
+    {
         position.x += dx;
         position.y += dy;
 
         return position;
+    }
+
+    public void MoveTorwards(int x, int y, EntityMap map, GroundMap groundMap)
+    {
+        var dx = x - position.x;
+        var dy = y - position.y;
+        var distance = (int)Mathf.Sqrt(dx * dx + dy * dy);
+
+        dx = dx / distance;
+        dy = dy / distance;
+
+        var newX = position.x + dx;
+        var newY = position.y + dy;
+
+        if ( !groundMap.IsBlocked(newX, newY) && map.GetBlockingEntityAtPosition(newX, newY) == null)
+        {
+            Move(dx, dy);
+        }
+    }
+
+    public int DistanceTo(Entity other)
+    {
+        var dx = other.position.x - position.x;
+        var dy = other.position.y - position.y;
+        return (int)Mathf.Sqrt(dx * dx + dy * dy);
     }
 }

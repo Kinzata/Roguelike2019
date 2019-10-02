@@ -47,7 +47,8 @@ public class GameManager : MonoBehaviour
         var playerSprite = spriteLoader.LoadSprite(SpriteType.Soldier_Sword);
 
         var fighter = new Fighter(30, 2, 5);
-        player = new Entity(new Vector3Int(startLocation.x, startLocation.y, 0), playerSprite, Color.green, fighter: fighter);
+        var playerComponent = new Player();
+        player = new Entity(new Vector3Int(startLocation.x, startLocation.y, 0), playerSprite, Color.green, player: playerComponent, fighter: fighter);
 
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
 
@@ -90,7 +91,7 @@ public class GameManager : MonoBehaviour
         {
             foreach (BasicMonsterAi enemy in entityMap.GetEnemies())
             {
-                enemy.TakeTurn();
+                enemy.TakeTurn(entityMap, groundMap);
             }
 
             gameState = GameState.Turn_Player;
