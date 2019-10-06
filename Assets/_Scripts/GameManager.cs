@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Entites")]
     private EntityMap entityMap;
+    private EntityMap entityMapBackground;
 
 
     [Header("Floor")]
@@ -44,6 +45,9 @@ public class GameManager : MonoBehaviour
         var entityTileMap = GameObject.Find(TileMapType.EntityMap.Name()).GetComponent<Tilemap>();
         entityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityTileMap, groundMap);
 
+        var entityBackgroundTileMap = GameObject.Find(TileMapType.EntityMap_Background.Name()).GetComponent<Tilemap>();
+        entityMapBackground = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, groundMap);
+
         var spriteLoader = SpriteLoader.instance;
         var playerSprite = spriteLoader.LoadSprite(SpriteType.Soldier_Sword);
 
@@ -70,8 +74,10 @@ public class GameManager : MonoBehaviour
     {
         ClearAll();
 
-        PlayerMove();
-        EnemyMove();
+        var playerTurnResults = PlayerMove();
+        ProcessTurnResults(playerTurnResults);
+        var enemyTurnResults = EnemyMove();
+        ProcessTurnResults(enemyTurnResults);
 
         RenderAll();
     }
@@ -86,16 +92,41 @@ public class GameManager : MonoBehaviour
         entityMap.ClearAll();
     }
 
-    void EnemyMove()
+    ActionResult EnemyMove()
     {
+        var actionResult = new ActionResult();
         if (gameState == GameState.Turn_Enemy)
         {
             foreach (BasicMonsterAi enemy in entityMap.GetEnemies())
             {
-                enemy.TakeTurn(entityMap, groundMap);
+                actionResult.Append(enemy.TakeTurn(entityMap, groundMap));
             }
 
             gameState = GameState.Turn_Player;
+        }
+
+        return actionResult;
+    }
+
+    void ProcessTurnResults(ActionResult results)
+    {
+        foreach (var message in results.GetMessages()) { Debug.Log(message); }
+        var deadEntities = results.GetEntityEvent("dead");
+        if (deadEntities.Count() > 0)
+        {
+            var actionResult = new ActionResult();
+            foreach( var dead in deadEntities ){
+                if( dead == player ){
+                    actionResult.Append(dead.ConvertToDeadPlayer());
+                    gameState = GameState.Global_PlayerDead;
+                }
+                else {
+                    actionResult.Append(dead.ConvertToDeadMonster());
+                }
+
+                entityMap.SwapEntityToMap(dead, entityMapBackground);
+            }
+            foreach (var message in actionResult.GetMessages()) { Debug.Log(message); }
         }
     }
 
@@ -114,8 +145,9 @@ public class GameManager : MonoBehaviour
         playerNextMoveDirection = direction;
     }
 
-    void PlayerMove()
+    ActionResult PlayerMove()
     {
+        var actionResult = new ActionResult();
         if (gameState == GameState.Turn_Player && playerNextMoveDirection != Vector2Int.zero)
         {
             (int x, int y) newPosition = (player.position.x + playerNextMoveDirection.x, player.position.y + playerNextMoveDirection.y);
@@ -124,7 +156,7 @@ public class GameManager : MonoBehaviour
             {
                 var target = entityMap.GetBlockingEntityAtPosition(newPosition.x, newPosition.y);
 
-                if (target != null) { Debug.Log("You kick the " + target.name + " in the shins!"); }
+                if (target != null) { actionResult.Append(player.fighterComponent.Attack(target)); }
                 else
                 {
                     player.Move(playerNextMoveDirection.x, playerNextMoveDirection.y);
@@ -139,5 +171,7 @@ public class GameManager : MonoBehaviour
             }
             playerNextMoveDirection = Vector2Int.zero;
         }
+
+        return actionResult;
     }
 }

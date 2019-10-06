@@ -86,4 +86,35 @@ public class Entity
         var dy = other.position.y - position.y;
         return (int)Mathf.Sqrt(dx * dx + dy * dy);
     }
+
+    public ActionResult ConvertToDeadPlayer(){
+        var actionResult = new ActionResult();
+        sprite = SpriteLoader.instance.LoadSprite(SpriteType.Remains_Bones);
+        color = new Color(.8f, .8f, .8f, 1);
+
+        tile.sprite = sprite;
+        tile.color = color;
+
+        actionResult.AppendMessage("You died!");
+        return actionResult;
+    }
+
+    public ActionResult ConvertToDeadMonster(){
+        var actionResult = new ActionResult();
+        sprite = SpriteLoader.instance.LoadSprite(SpriteType.Remains_Skull);
+        color = new Color(.8f, .8f, .8f, 1);
+
+        tile.sprite = sprite;
+        tile.color = color;
+
+        actionResult.AppendMessage($"{name.ToPronoun()} is dead!");
+
+        name = $"remains of {name.ToPronoun()}";
+        blocks = false;
+        fighterComponent = null;
+        aiComponent = null;
+        enemy = false;
+
+        return actionResult;
+    }
 }

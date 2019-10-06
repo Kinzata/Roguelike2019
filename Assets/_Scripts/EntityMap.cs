@@ -3,42 +3,55 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class EntityMap : ScriptableObject{
+public class EntityMap : ScriptableObject
+{
 
     private Tilemap map;
     private GroundMap groundMap;
     private IList<Entity> entities = new List<Entity>();
 
-    public EntityMap Init(Tilemap map, GroundMap groundMap){
+    public EntityMap Init(Tilemap map, GroundMap groundMap)
+    {
         this.map = map;
         this.groundMap = groundMap;
 
         return this;
     }
 
-    public Entity GetBlockingEntityAtPosition(int x, int y){
+    public Entity GetBlockingEntityAtPosition(int x, int y)
+    {
         return entities.Where(e => e.position.x == x && e.position.y == y && e.blocks).FirstOrDefault();
     }
 
-    public IEnumerable<BasicMonsterAi> GetEnemies(){
+    public IEnumerable<BasicMonsterAi> GetEnemies()
+    {
         return entities.Where(e => e.aiComponent != null).Select(e => e.aiComponent);
     }
 
-    public Entity GetPlayer(){
+    public Entity GetPlayer()
+    {
         return entities.Where(e => e.playerComponent != null).Select(e => e).FirstOrDefault();
     }
 
-    public void AddEntity(Entity entity){
+    public void AddEntity(Entity entity)
+    {
         entities.Add(entity);
     }
 
-    public IList<Entity> GetEntities(){
+    public void RemoveEntity(Entity entity)
+    {
+        entities.Remove(entity);
+    }
+
+    public IList<Entity> GetEntities()
+    {
         return entities;
     }
 
     public void DrawEntity(Entity entity)
     {
-        if( groundMap.isTileVisible(entity.position.x, entity.position.y)){
+        if (groundMap.isTileVisible(entity.position.x, entity.position.y))
+        {
             map.SetTile(entity.position, entity.tile);
         }
     }
@@ -62,5 +75,14 @@ public class EntityMap : ScriptableObject{
         {
             ClearEntity(entity);
         }
+    }
+
+    public void SwapEntityToMap(Entity entity, EntityMap otherMap)
+    {
+        RemoveEntity(entity);
+        ClearEntity(entity);
+
+        otherMap.AddEntity(entity);
+        otherMap.DrawEntity(entity);
     }
 }

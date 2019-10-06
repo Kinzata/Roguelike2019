@@ -1,4 +1,5 @@
 public enum GameState{
     Turn_Player,
-    Turn_Enemy
+    Turn_Enemy,
+    Global_PlayerDead
 }

@@ -4,5 +4,7 @@ public enum SpriteType{
     Wall_Stone,
     Floor_Grass,
     Monster_Orc,
-    Monster_Troll
+    Monster_Troll,
+    Remains_Skull,
+    Remains_Bones
 }

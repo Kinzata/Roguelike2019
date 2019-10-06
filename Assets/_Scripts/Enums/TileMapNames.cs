@@ -5,6 +5,7 @@ using UnityEngine;
 public enum TileMapType
 {
     EntityMap,
+    EntityMap_Background,
     GroundMap
 }
 
@@ -16,6 +17,8 @@ public static class TileMapNamesExtensions
         {
             case TileMapType.EntityMap:
                 return "EntityMap";
+            case TileMapType.EntityMap_Background:
+                return "EntityMap-Background";
             case TileMapType.GroundMap:
                 return "GroundMap";
             default:

@@ -6,7 +6,7 @@ public class SpriteLoader : MonoBehaviour
 
     public Sprite[] spriteSheet;
 
-    private int[] floor_grass_sprites = {1,2,4,6};
+    private int[] floor_grass_sprites = { 1, 2, 4, 6 };
 
     void Start()
     {
@@ -40,6 +40,10 @@ public class SpriteLoader : MonoBehaviour
                 return spriteSheet[89];
             case SpriteType.Monster_Troll:
                 return spriteSheet[92];
+            case SpriteType.Remains_Bones:
+                return spriteSheet[479];
+            case SpriteType.Remains_Skull:
+                return spriteSheet[479];
             default:
                 throw new System.Exception("Bad sprite sheet enum type.");
         }
