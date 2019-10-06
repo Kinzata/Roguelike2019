@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class BasicMonsterAi : Component {
     public void TakeTurn(EntityMap entityMap, GroundMap groundMap){
+        var aStar = new AStar(groundMap);
         var target = entityMap.GetPlayer();
         if( target == null ){
             Debug.Log($"The {owner.name} is confused.  What should it do?");
@@ -10,7 +11,9 @@ public class BasicMonsterAi : Component {
 
         if( groundMap.isTileVisible(owner.position.x, owner.position.y) ){
             if( owner.DistanceTo(target) >= 2 ){
-                owner.MoveTorwards(target.position.x, target.position.y, entityMap, groundMap);
+                var moveTile = aStar.FindPathToTarget((owner.position.x, owner.position.y), (target.position.x, target.position.y));
+                if( moveTile == null ) { return; }
+                owner.MoveTorwards(moveTile.x, moveTile.y, entityMap, groundMap);
             }
             else {
                 Debug.Log($"The {owner.name} insults you!  Your ego is damaged.");

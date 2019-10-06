@@ -73,6 +73,77 @@ public class GroundMap : ScriptableObject
         return x >= 0 && x < tiles.GetLength(0) && y >= 0 && y < tiles.GetLength(1);
     }
 
+    public WorldTile GetTileInDirection(Navigation direction, (int x, int y) position)
+    {
+        var x = 0; var y = 0;
+        switch (direction)
+        {
+            case Navigation.N:
+                { x = position.x; y = position.y + 1; break; }
+            case Navigation.NE:
+                { x = position.x + 1; y = position.y + 1; break; }
+            case Navigation.E:
+                { x = position.x + 1; y = position.y; break; }
+            case Navigation.SE:
+                { x = position.x + 1; y = position.y - 1; break; }
+            case Navigation.S:
+                { x = position.x; y = position.y - 1; break; }
+            case Navigation.SW:
+                { x = position.x - 1; y = position.y - 1; break; }
+            case Navigation.W:
+                { x = position.x - 1; y = position.y; break; }
+            default:
+                { x = position.x - 1; y = position.y + 1; break; }
+        }
+        if (isTileValid(x, y))
+        {
+            return tiles[x, y];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public List<WorldTile> GetTraversableNeighbors(int x, int y)
+    {
+        var tile = tiles[x, y];
+        var neighbors = new List<WorldTile>();
+        if ((tile.navMask & Navigation.N) == Navigation.N)
+        {
+            neighbors.Add(tiles[x, y + 1]);
+        }
+        if ((tile.navMask & Navigation.NE) == Navigation.NE)
+        {
+            neighbors.Add(tiles[x + 1, y + 1]);
+        }
+        if ((tile.navMask & Navigation.E) == Navigation.E)
+        {
+            neighbors.Add(tiles[x + 1, y]);
+        }
+        if ((tile.navMask & Navigation.SE) == Navigation.SE)
+        {
+            neighbors.Add(tiles[x + 1, y - 1]);
+        }
+        if ((tile.navMask & Navigation.S) == Navigation.S)
+        {
+            neighbors.Add(tiles[x, y - 1]);
+        }
+        if ((tile.navMask & Navigation.SW) == Navigation.SW)
+        {
+            neighbors.Add(tiles[x - 1, y - 1]);
+        }
+        if ((tile.navMask & Navigation.W) == Navigation.W)
+        {
+            neighbors.Add(tiles[x - 1, y]);
+        }
+        if ((tile.navMask & Navigation.NW) == Navigation.NW)
+        {
+            neighbors.Add(tiles[x - 1, y + 1]);
+        }
+        return neighbors;
+    }
+
     public Vector2Int MakeMap(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight)
     {
         rooms = new List<Room>();
@@ -225,7 +296,7 @@ public class GroundMap : ScriptableObject
         {
             for (int y = 0; y < height; y++)
             {
-                var tile = ScriptableObject.CreateInstance<WorldTile>().Init(true);
+                var tile = ScriptableObject.CreateInstance<WorldTile>().Init(x, y, true);
                 tile.sprite = wallSprite;
                 tile.colorLight = Color.gray;
                 tiles[x, y] = tile;
@@ -262,7 +333,7 @@ public class GroundMap : ScriptableObject
                 if (isTileValid(x + 1, y) && !tiles[x + 1, y].blocked)
                 { tile.navMask = tile.navMask | Navigation.E; }
                 // SE 
-                if (isTileValid(x + 1, y - 1) && !tiles[x + 1, y - 1].blocked) 
+                if (isTileValid(x + 1, y - 1) && !tiles[x + 1, y - 1].blocked)
                 { tile.navMask = tile.navMask | Navigation.SE; }
                 // S
                 if (isTileValid(x, y - 1) && !tiles[x, y - 1].blocked)

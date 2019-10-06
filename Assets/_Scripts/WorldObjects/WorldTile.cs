@@ -5,6 +5,8 @@ using UnityEngine.Tilemaps;
 
 public class WorldTile : Tile
 {
+    public int x;
+    public int y;
     public bool blocked;
     public bool blockSight;
     public bool isVisible;
@@ -17,8 +19,11 @@ public class WorldTile : Tile
     public Navigation navMask = 0;
     
 
-    public WorldTile Init(bool blocked, bool? blockSight = null)
+    public WorldTile Init(int x, int y, bool blocked, bool? blockSight = null)
     {
+        this.x = x;
+        this.y = y;
+        
         // Block sight by default only if tile is blocked, otherwise use input
         this.blocked = blocked;
 

@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
     public int mapHeight = 60;
     public IntRange roomSizeRange;
     public int maxRooms = 30;
+    public int maxEnemiesInRoom = 1;
 
     [Header("Systems")]
     private FieldOfViewSystem fovSystem;
@@ -55,7 +56,7 @@ public class GameManager : MonoBehaviour
         fovSystem = new FieldOfViewSystem(groundMap);
         fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
 
-        groundMap.FillRoomsWithEnemies(entityMap.GetEntities(), 3);
+        groundMap.FillRoomsWithEnemies(entityMap.GetEntities(), maxEnemiesInRoom);
         entityMap.AddEntity(player);
 
         InitEventListeners();
