@@ -2,12 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 public class GameManager : MonoBehaviour
 {
     private Entity player;
+    public PlayerStatInterface statText;
     private GameEventListener moveListener;
     private Vector2Int playerNextMoveDirection;
     private GameState gameState;
@@ -66,6 +68,7 @@ public class GameManager : MonoBehaviour
         InitEventListeners();
         groundMap.UpdateTiles();
 
+        statText.SetPlayer(player);
         gameState = GameState.Turn_Player;
     }
 
