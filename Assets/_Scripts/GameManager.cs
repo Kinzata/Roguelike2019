@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     private GameEventListener moveListener;
     private Vector2Int playerNextMoveDirection;
     private GameState gameState;
+    private MessageLog log;
 
     [Header("Entites")]
     private EntityMap entityMap;
@@ -70,6 +71,8 @@ public class GameManager : MonoBehaviour
 
         statText.SetPlayer(player);
         gameState = GameState.Turn_Player;
+
+        log = FindObjectOfType<MessageLog>();
     }
 
     // Update is called once per frame
@@ -113,7 +116,7 @@ public class GameManager : MonoBehaviour
 
     void ProcessTurnResults(ActionResult results)
     {
-        foreach (var message in results.GetMessages()) { Debug.Log(message); }
+        foreach (var message in results.GetMessages()) { log.AddMessage(message); }
         var deadEntities = results.GetEntityEvent("dead");
         if (deadEntities.Count() > 0)
         {
@@ -129,7 +132,7 @@ public class GameManager : MonoBehaviour
 
                 entityMap.SwapEntityToMap(dead, entityMapBackground);
             }
-            foreach (var message in actionResult.GetMessages()) { Debug.Log(message); }
+            foreach (var message in actionResult.GetMessages()) { log.AddMessage(message);  }
         }
     }
 

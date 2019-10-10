@@ -3,13 +3,13 @@ using System.Linq;
 
 public class ActionResult
 {
-    private List<string> messages;
+    private List<Message> messages;
     private List<KeyValuePair<string, Entity>> entityEvents;
 
 
     public ActionResult()
     {
-        messages = new List<string>();
+        messages = new List<Message>();
         entityEvents = new List<KeyValuePair<string, Entity>>();
     }
 
@@ -22,12 +22,12 @@ public class ActionResult
         }
     }
 
-    public void AppendMessage(string message)
+    public void AppendMessage(Message message)
     {
         messages.Add(message);
     }
 
-    public List<string> GetMessages()
+    public List<Message> GetMessages()
     {
         return messages;
     }

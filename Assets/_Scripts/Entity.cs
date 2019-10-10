@@ -74,7 +74,7 @@ public class Entity
         var newX = position.x + dx;
         var newY = position.y + dy;
 
-        if ( !groundMap.IsBlocked(newX, newY) && map.GetBlockingEntityAtPosition(newX, newY) == null)
+        if (!groundMap.IsBlocked(newX, newY) && map.GetBlockingEntityAtPosition(newX, newY) == null)
         {
             Move(dx, dy);
         }
@@ -87,7 +87,8 @@ public class Entity
         return (int)Mathf.Sqrt(dx * dx + dy * dy);
     }
 
-    public ActionResult ConvertToDeadPlayer(){
+    public ActionResult ConvertToDeadPlayer()
+    {
         var actionResult = new ActionResult();
         sprite = SpriteLoader.instance.LoadSprite(SpriteType.Remains_Bones);
         color = new Color(.8f, .8f, .8f, 1);
@@ -95,19 +96,21 @@ public class Entity
         tile.sprite = sprite;
         tile.color = color;
 
-        actionResult.AppendMessage("You died!");
+        actionResult.AppendMessage(new Message("You died!", Color.red));
         return actionResult;
     }
 
-    public ActionResult ConvertToDeadMonster(){
+    public ActionResult ConvertToDeadMonster()
+    {
         var actionResult = new ActionResult();
         sprite = SpriteLoader.instance.LoadSprite(SpriteType.Remains_Skull);
+
+        actionResult.AppendMessage(new Message($"{GetColoredName()} is dead!", null));
+        
         color = new Color(.8f, .8f, .8f, 1);
 
         tile.sprite = sprite;
         tile.color = color;
-
-        actionResult.AppendMessage($"{name.ToPronoun()} is dead!");
 
         name = $"remains of {name.ToPronoun()}";
         blocks = false;
@@ -116,5 +119,10 @@ public class Entity
         enemy = false;
 
         return actionResult;
+    }
+
+    public string GetColoredName()
+    {
+        return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name.ToPronoun()}</color>";
     }
 }

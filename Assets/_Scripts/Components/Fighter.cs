@@ -34,11 +34,11 @@ public class Fighter : Component
         var damage = offensePower - target.fighterComponent.defensePower;
 
         if( damage > 0 ){
-            actionResult.AppendMessage($"{owner.name.ToPronoun()} attacks {target.name.ToPronoun()} for {damage} hit points!");
+            actionResult.AppendMessage(new Message($"{owner.GetColoredName()} attacks {target.GetColoredName()} for {damage} hit points!", null));
             actionResult.Append(target.fighterComponent.TakeDamage(damage));
         }
         else {
-            actionResult.AppendMessage($"{owner.name.ToPronoun()} attacks {target.name.ToPronoun()} for no damage.");
+            actionResult.AppendMessage(new Message($"{owner.GetColoredName()} attacks {target.GetColoredName()} for no damage.", null));
         }
 
         return actionResult;

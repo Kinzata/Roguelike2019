@@ -6,7 +6,7 @@ public class BasicMonsterAi : Component {
         var target = entityMap.GetPlayer();
         var actionResult = new ActionResult();
         if( target == null ){
-            actionResult.AppendMessage($"The {owner.name} is confused.  What should it do?");
+            actionResult.AppendMessage(new Message($"The {owner.name} is confused.  What should it do?",null));
             return actionResult;
         }
 
