@@ -90,11 +90,13 @@ public class GameManager : MonoBehaviour
 
     void RenderAll()
     {
+        entityMapBackground.RenderAll();
         entityMap.RenderAll();
     }
 
     public void ClearAll()
     {
+        entityMapBackground.ClearAll();
         entityMap.ClearAll();
     }
 
@@ -121,18 +123,21 @@ public class GameManager : MonoBehaviour
         if (deadEntities.Count() > 0)
         {
             var actionResult = new ActionResult();
-            foreach( var dead in deadEntities ){
-                if( dead == player ){
+            foreach (var dead in deadEntities)
+            {
+                if (dead == player)
+                {
                     actionResult.Append(dead.ConvertToDeadPlayer());
                     gameState = GameState.Global_PlayerDead;
                 }
-                else {
+                else
+                {
                     actionResult.Append(dead.ConvertToDeadMonster());
                 }
 
                 entityMap.SwapEntityToMap(dead, entityMapBackground);
             }
-            foreach (var message in actionResult.GetMessages()) { log.AddMessage(message);  }
+            foreach (var message in actionResult.GetMessages()) { log.AddMessage(message); }
         }
     }
 

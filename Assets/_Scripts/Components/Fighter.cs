@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Fighter : Component
+public class Fighter : EntityComponent
 {
     public int maxHp;
     public int hp;

@@ -1,3 +1,3 @@
-public class Player : Component {
+public class Player : EntityComponent {
     
 }
