@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -29,6 +30,8 @@ public class GameManager : MonoBehaviour
     [Header("Systems")]
     private FieldOfViewSystem fovSystem;
 
+    private IList<Actor> actors;
+
     void Start()
     {
         roomSizeRange = IntRange.CreateInstance<IntRange>();
@@ -48,21 +51,31 @@ public class GameManager : MonoBehaviour
         entityMapBackground = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, groundMap);
 
         // Test Item
-        var potion = new Entity((startLocation.x, startLocation.y), spriteType: SpriteType.Item_Potion_Full, name: "potion");
+        var potion = new Entity(startLocation, spriteType: SpriteType.Item_Potion_Full, name: "potion");
         entityMap.AddEntity(potion);
 
+        actors = new List<Actor>();
+
+        // Build Player
         var fighter = new Fighter(30, 2, 5);
         var playerComponent = new Player();
-        player = new Entity((startLocation.x, startLocation.y), spriteType: SpriteType.Soldier_Sword, color: Color.green, player: playerComponent, fighter: fighter);
+        player = new Entity(startLocation, spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player", player: playerComponent, fighter: fighter);
+        actors.Add(new Actor(player));
 
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
 
+        // Build Enemies
+        var newEntities = groundMap.FillRoomsWithEnemies(entityMap.GetEntities(), maxEnemiesInRoom);
+        foreach(var enemy in newEntities ){
+            actors.Add(new Actor(enemy));
+        }
+        entityMap.AddEntity(player);
+
+        // Setup Systems
         fovSystem = new FieldOfViewSystem(groundMap);
         fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
 
-        groundMap.FillRoomsWithEnemies(entityMap.GetEntities(), maxEnemiesInRoom);
-        entityMap.AddEntity(player);
-
+        // Final Setup
         InitEventListeners();
         groundMap.UpdateTiles();
 
@@ -79,7 +92,7 @@ public class GameManager : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             var tilePos = groundMap.map.WorldToCell(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-            ReportObjectsAtPosition(tilePos.x, tilePos.y);
+            ReportObjectsAtPosition(new CellPosition(tilePos));
         }
 
         ClearAll();
@@ -109,9 +122,12 @@ public class GameManager : MonoBehaviour
         var actionResult = new ActionResult();
         if (gameState == GameState.Turn_Enemy)
         {
-            foreach (BasicMonsterAi enemy in entityMap.GetEnemies())
-            {
-                actionResult.Append(enemy.TakeTurn(entityMap, groundMap));
+            foreach( Actor actor in actors ){
+                var enemy = actor.entity.enemy && actor.entity.aiComponent != null ? actor.entity.aiComponent : null;
+                if( enemy == null ) { continue; }
+
+                var action = enemy.GetAction(entityMap, groundMap);
+                actionResult.Append(action.PerformAction());
             }
 
             gameState = GameState.Turn_Player;
@@ -145,8 +161,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void ReportObjectsAtPosition(int x, int y){
-        var pos = new Vector3Int(x,y,0);
+    private void ReportObjectsAtPosition(CellPosition pos){
         var entityNames = entityMap.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
         var backgroundNames = entityMapBackground.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
 

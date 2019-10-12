@@ -64,9 +64,9 @@ public class GroundMap : ScriptableObject
         return false;
     }
 
-    public bool isTileVisible(int x, int y)
+    public bool isTileVisible(CellPosition pos)
     {
-        return tiles[x, y].isVisible;
+        return tiles[pos.x, pos.y].isVisible;
     }
     public bool isTileValid(int x, int y)
     {
@@ -144,7 +144,7 @@ public class GroundMap : ScriptableObject
         return neighbors;
     }
 
-    public Vector2Int MakeMap(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight)
+    public CellPosition MakeMap(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight)
     {
         rooms = new List<Room>();
         var counter = 0;
@@ -251,7 +251,7 @@ public class GroundMap : ScriptableObject
         return entities;
     }
 
-    public Entity GenerateEnemy((int x, int y) position)
+    public Entity GenerateEnemy(CellPosition position)
     {
         SpriteType spriteType;
         Color color;
@@ -279,7 +279,7 @@ public class GroundMap : ScriptableObject
         }
 
         return new Entity(
-            (position.x, position.y),
+            position,
             spriteType,
             color,
             blocks: true,

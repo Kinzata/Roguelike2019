@@ -8,7 +8,7 @@ public class Room
 {
     public Rect rect;
     public GroundMap map;
-    public Vector2Int center;
+    public CellPosition center;
 
     public Room(Rect rect, GroundMap map)
     {
@@ -18,9 +18,9 @@ public class Room
         this.center = CalculateCenter();
     }
 
-    private Vector2Int CalculateCenter()
+    private CellPosition CalculateCenter()
     {
-        return new Vector2Int((int)rect.center.x, (int)rect.center.y);
+        return new CellPosition((int)rect.center.x, (int)rect.center.y);
     }
 
     public bool Intersects(Room other)
@@ -30,10 +30,10 @@ public class Room
                rect.yMin <= other.rect.yMax && rect.yMax >= other.rect.yMin);
     }
 
-    public (int x, int y) GetRandomLocation(){
+    public CellPosition GetRandomLocation(){
         var x = Random.Range((int)rect.xMin+1, (int)rect.xMax);
         var y = Random.Range((int)rect.yMin+1, (int)rect.yMax);
-        return (x,y);
+        return new CellPosition(x,y);
     }
 
     public Room BuildRoom()

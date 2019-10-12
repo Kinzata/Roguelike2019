@@ -15,6 +15,7 @@ public class AStar
         this.pathMap = new AStarTile[map.width, map.height];
     }
 
+    // TODO: This should return a path object instead of just the first tile.  Can hold onto it and reuse then.
     public WorldTile FindPathToTarget((int x, int y) start, (int x, int y) target)
     {
         List<AStarTile> openNodes = new List<AStarTile>();
