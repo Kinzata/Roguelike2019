@@ -128,6 +128,11 @@ public class GameManager : MonoBehaviour
 
                 var action = enemy.GetAction(entityMap, groundMap);
                 actionResult.Append(action.PerformAction());
+
+                // break processing if player dies
+                if( actionResult.GetEntityEvent("dead").Where( e => e == player).Any() ){
+                    break;
+                }
             }
 
             gameState = GameState.Turn_Player;
