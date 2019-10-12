@@ -6,8 +6,8 @@ using UnityEngine.Tilemaps;
 public class EntityMap : ScriptableObject
 {
 
-    private Tilemap map;
-    private GroundMap groundMap;
+    public Tilemap map;
+    public GroundMap groundMap;
     private IList<Entity> entities = new List<Entity>();
 
     public EntityMap Init(Tilemap map, GroundMap groundMap)

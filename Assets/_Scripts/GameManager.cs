@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using TMPro;
+﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -78,6 +74,13 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Handle User Input (yes we're doing this elsewhere too, plan on fixing that)
+        if (Input.GetMouseButtonDown(0))
+        {
+            var tilePos = groundMap.map.WorldToCell(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+            ReportObjectsAtPosition(tilePos.x, tilePos.y);
+        }
+
         ClearAll();
 
         var playerTurnResults = PlayerMove();
@@ -139,6 +142,22 @@ public class GameManager : MonoBehaviour
             }
             foreach (var message in actionResult.GetMessages()) { log.AddMessage(message); }
         }
+    }
+
+    private void ReportObjectsAtPosition(int x, int y){
+        var pos = new Vector3Int(x,y,0);
+        var entityNames = entityMap.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
+        var backgroundNames = entityMapBackground.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
+
+        var entitiesToLog = entityNames.Concat(backgroundNames);
+        var message = "There is nothing there.";
+
+        if( entitiesToLog.Count() > 0 ) {
+            var names = string.Join(", ", entitiesToLog);
+            message = $"You see: {names}";
+        }
+        
+        log.AddMessage(new Message(message, null));
     }
 
     /** Player specific event functions */
