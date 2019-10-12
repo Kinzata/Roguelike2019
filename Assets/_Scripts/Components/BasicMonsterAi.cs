@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class BasicMonsterAi : EntityComponent {
     public ActionResult TakeTurn(EntityMap entityMap, GroundMap groundMap){
-        var aStar = new AStar(groundMap);
+        var aStar = new AStar(groundMap, entityMap);
         var target = entityMap.GetPlayer();
         var actionResult = new ActionResult();
         if( target == null ){

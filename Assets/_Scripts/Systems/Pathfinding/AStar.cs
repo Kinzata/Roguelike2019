@@ -5,11 +5,13 @@ using UnityEngine;
 public class AStar
 {
     public GroundMap map;
+    public EntityMap entityMap;
     public AStarTile[,] pathMap;
 
-    public AStar(GroundMap map)
+    public AStar(GroundMap map, EntityMap entityMap)
     {
         this.map = map;
+        this.entityMap = entityMap;
         this.pathMap = new AStarTile[map.width, map.height];
     }
 
@@ -41,6 +43,13 @@ public class AStar
                 return current.GetFirstTileInPath().tile;
             }
 
+            // Check if tile is blocked on entity map
+            if (current.pos != start)
+            {
+                var blockingEntity = entityMap.GetBlockingEntityAtPosition(current.pos.x, current.pos.y);
+                if (blockingEntity != null) { continue; }
+            }
+
             // Check each direction for potential path
             CheckDirection(Navigation.N, current, openNodes, closedNodes, target);
             CheckDirection(Navigation.NE, current, openNodes, closedNodes, target);
@@ -61,7 +70,8 @@ public class AStar
         if ((current.tile.navMask & direction) == direction) // direction is valid
         {
             var neighborTile = map.GetTileInDirection(direction, current.pos);
-            if( neighborTile == null ) { return; }
+            if (neighborTile == null) { return; }
+
             var neighborAStarTile = pathMap[neighborTile.x, neighborTile.y];
             if (neighborAStarTile != null && closedNodes.Contains(neighborAStarTile))
             {
@@ -91,8 +101,10 @@ public class AStar
                 pathMap[neighborTile.x, neighborTile.y] = neighborAStarTile;
                 openNodes.Add(neighborAStarTile);
             }
-            else {
-                if( neighborAStarTile.FCost > fCost ){
+            else
+            {
+                if (neighborAStarTile.FCost > fCost)
+                {
                     neighborAStarTile.GCost = gCost;
                     neighborAStarTile.HCost = hCost;
                     neighborAStarTile.FCost = fCost;
@@ -145,11 +157,13 @@ public class AStarTile
     public int HCost;
     public int FCost;
 
-    public AStarTile GetFirstTileInPath(){
+    public AStarTile GetFirstTileInPath()
+    {
         var tile = this;
         var parent = tile.parent;
 
-        while( parent != null && parent.parent != null ){
+        while (parent != null && parent.parent != null)
+        {
             tile = parent;
             parent = tile.parent;
         }
