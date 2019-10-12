@@ -47,12 +47,13 @@ public class GameManager : MonoBehaviour
         var entityBackgroundTileMap = GameObject.Find(TileMapType.EntityMap_Background.Name()).GetComponent<Tilemap>();
         entityMapBackground = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, groundMap);
 
-        var spriteLoader = SpriteLoader.instance;
-        var playerSprite = spriteLoader.LoadSprite(SpriteType.Soldier_Sword);
+        // Test Item
+        var potion = new Entity((startLocation.x, startLocation.y), spriteType: SpriteType.Item_Potion_Full, name: "potion");
+        entityMap.AddEntity(potion);
 
         var fighter = new Fighter(30, 2, 5);
         var playerComponent = new Player();
-        player = new Entity(new Vector3Int(startLocation.x, startLocation.y, 0), playerSprite, Color.green, player: playerComponent, fighter: fighter);
+        player = new Entity((startLocation.x, startLocation.y), spriteType: SpriteType.Soldier_Sword, color: Color.green, player: playerComponent, fighter: fighter);
 
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
 

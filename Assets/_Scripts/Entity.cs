@@ -21,12 +21,12 @@ public class Entity
     public Fighter fighterComponent;
     public BasicMonsterAi aiComponent;
 
-    public Entity(Vector3Int position, Sprite sprite, Color color, bool blocks = false, string name = "mysterious enemy", bool enemy = false,
+    public Entity((int x, int y) pos, SpriteType spriteType = SpriteType.Nothing, Color? color = null, bool blocks = false, string name = "mysterious enemy", bool enemy = false,
         Player player = null, Fighter fighter = null, BasicMonsterAi ai = null)
     {
-        this.position = position;
-        this.sprite = sprite;
-        this.color = color;
+        this.position = new Vector3Int(pos.x, pos.y, 0);
+        this.sprite = SpriteLoader.instance.LoadSprite(spriteType);
+        this.color = color ?? Color.magenta;
         this.blocks = blocks;
         this.name = name;
         this.enemy = enemy;
@@ -35,8 +35,8 @@ public class Entity
         this.aiComponent = ai;
 
         tile = Tile.CreateInstance<WorldTile>();
-        tile.sprite = sprite;
-        tile.color = color;
+        tile.sprite = this.sprite;
+        tile.color = this.color;
 
         if (player != null)
         {
@@ -106,7 +106,7 @@ public class Entity
         sprite = SpriteLoader.instance.LoadSprite(SpriteType.Remains_Skull);
 
         actionResult.AppendMessage(new Message($"{GetColoredName()} is dead!", null));
-        
+
         color = new Color(.8f, .8f, .8f, 1);
 
         tile.sprite = sprite;

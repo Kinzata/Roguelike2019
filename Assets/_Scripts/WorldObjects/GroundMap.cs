@@ -253,7 +253,7 @@ public class GroundMap : ScriptableObject
 
     public Entity GenerateEnemy((int x, int y) position)
     {
-        Sprite sprite;
+        SpriteType spriteType;
         Color color;
         string name;
         Fighter fighter;
@@ -262,7 +262,7 @@ public class GroundMap : ScriptableObject
         if (Random.value <= .8f)
         {
             // Generate Orc
-            sprite = SpriteLoader.instance.LoadSprite(SpriteType.Monster_Orc);
+            spriteType = SpriteType.Monster_Orc;
             color = new Color(.8f, 0, 0, 1f);
             name = "orc";
             fighter = new Fighter(10, 0, 3);
@@ -271,7 +271,7 @@ public class GroundMap : ScriptableObject
         else
         {
             // Generate Troll
-            sprite = SpriteLoader.instance.LoadSprite(SpriteType.Monster_Troll);
+            spriteType = SpriteType.Monster_Troll;
             color = new Color(.8f, 0, 0, 1f);
             name = "troll";
             fighter = new Fighter(16, 1, 4);
@@ -279,8 +279,8 @@ public class GroundMap : ScriptableObject
         }
 
         return new Entity(
-            new Vector3Int(position.x, position.y, 0),
-            sprite,
+            (position.x, position.y),
+            spriteType,
             color,
             blocks: true,
             name: name,
