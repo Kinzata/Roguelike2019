@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
     private Entity player;
     public PlayerStatInterface statText;
     private GameEventListener moveListener;
-    private Vector2Int playerNextMoveDirection;
+    private Action playerNextAction;
     private GameState gameState;
     private MessageLog log;
 
@@ -66,7 +66,8 @@ public class GameManager : MonoBehaviour
 
         // Build Enemies
         var newEntities = groundMap.FillRoomsWithEnemies(entityMap.GetEntities(), maxEnemiesInRoom);
-        foreach(var enemy in newEntities ){
+        foreach (var enemy in newEntities)
+        {
             actors.Add(new Actor(enemy));
         }
         entityMap.AddEntity(player);
@@ -122,15 +123,17 @@ public class GameManager : MonoBehaviour
         var actionResult = new ActionResult();
         if (gameState == GameState.Turn_Enemy)
         {
-            foreach( Actor actor in actors ){
+            foreach (Actor actor in actors)
+            {
                 var enemy = actor.entity.enemy && actor.entity.aiComponent != null ? actor.entity.aiComponent : null;
-                if( enemy == null ) { continue; }
+                if (enemy == null) { continue; }
 
                 var action = enemy.GetAction(entityMap, groundMap);
                 actionResult.Append(action.PerformAction());
 
                 // break processing if player dies
-                if( actionResult.GetEntityEvent("dead").Where( e => e == player).Any() ){
+                if (actionResult.GetEntityEvent("dead").Where(e => e == player).Any())
+                {
                     break;
                 }
             }
@@ -166,18 +169,20 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void ReportObjectsAtPosition(CellPosition pos){
+    private void ReportObjectsAtPosition(CellPosition pos)
+    {
         var entityNames = entityMap.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
         var backgroundNames = entityMapBackground.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
 
         var entitiesToLog = entityNames.Concat(backgroundNames);
         var message = "There is nothing there.";
 
-        if( entitiesToLog.Count() > 0 ) {
+        if (entitiesToLog.Count() > 0)
+        {
             var names = string.Join(", ", entitiesToLog);
             message = $"You see: {names}";
         }
-        
+
         log.AddMessage(new Message(message, null));
     }
 
@@ -193,34 +198,36 @@ public class GameManager : MonoBehaviour
 
     void SetMoveDirection(Vector2Int direction)
     {
-        playerNextMoveDirection = direction;
+        CellPosition newPosition = new CellPosition(player.position.x + direction.x, player.position.y + direction.y);
+        var action = new WalkAction(player.actor, entityMap, groundMap, newPosition);
+        playerNextAction = action;
     }
 
     ActionResult PlayerMove()
     {
         var actionResult = new ActionResult();
-        if (gameState == GameState.Turn_Player && playerNextMoveDirection != Vector2Int.zero)
+        if (gameState == GameState.Turn_Player && playerNextAction != null)
         {
-            (int x, int y) newPosition = (player.position.x + playerNextMoveDirection.x, player.position.y + playerNextMoveDirection.y);
-
-            if (!groundMap.IsBlocked(newPosition.x, newPosition.y))
+            do
             {
-                var target = entityMap.GetBlockingEntityAtPosition(newPosition.x, newPosition.y);
+                actionResult = playerNextAction.PerformAction();
+                playerNextAction = actionResult.nextAction;
 
-                if (target != null) { actionResult.Append(player.fighterComponent.Attack(target)); }
-                else
-                {
-                    player.Move(playerNextMoveDirection.x, playerNextMoveDirection.y);
-                    Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
-                    fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
-                    groundMap.UpdateTiles();
-                }
+                // Cleanup to handle after player potentially changes position
+                Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
+                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
+                groundMap.UpdateTiles();
+            }
+            while (actionResult.nextAction != null);
 
+            if (actionResult.success )
+            {
                 // Player ends their turn ONLY IF THEY ACTUALLY DO SOMETHING
                 // Attempting to move into a wall, should not waste a turn (unless they attack it)
                 gameState = GameState.Turn_Enemy;
             }
-            playerNextMoveDirection = Vector2Int.zero;
+
+            playerNextAction = null;
         }
 
         return actionResult;

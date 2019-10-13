@@ -46,6 +46,13 @@ public class GroundMap : ScriptableObject
         }
     }
 
+    public WorldTile GetTileAt(CellPosition pos){
+        if( isTileValid(pos.x, pos.y) ){
+            return tiles[pos.x,pos.y];
+        }
+        return null;
+    }
+
     public void ClearVisibility()
     {
         foreach (WorldTile tile in tiles)
