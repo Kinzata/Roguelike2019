@@ -51,7 +51,7 @@ public class GameManager : MonoBehaviour
         entityMapBackground = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, groundMap);
 
         // Test Item
-        var potion = new Entity(startLocation, spriteType: SpriteType.Item_Potion_Full, name: "potion");
+        var potion = new Entity(startLocation.Clone(), spriteType: SpriteType.Item_Potion_Full, name: "potion");
         entityMap.AddEntity(potion);
 
         actors = new List<Actor>();
@@ -59,7 +59,7 @@ public class GameManager : MonoBehaviour
         // Build Player
         var fighter = new Fighter(30, 2, 5);
         var playerComponent = new Player();
-        player = new Entity(startLocation, spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player", player: playerComponent, fighter: fighter);
+        player = new Entity(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player", player: playerComponent, fighter: fighter);
         actors.Add(new Actor(player));
 
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);

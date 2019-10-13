@@ -9,6 +9,7 @@ public abstract class Action
         this.actor = actor;
         this.eMap = eMap;
         this.gMap = gMap;
+        result = new ActionResult();
     }
 
     public void SetActionResult(ActionResult result){

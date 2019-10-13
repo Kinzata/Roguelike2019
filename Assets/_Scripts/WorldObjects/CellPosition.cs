@@ -1,4 +1,5 @@
 
+using System;
 using UnityEngine;
 
 public class CellPosition
@@ -34,6 +35,11 @@ public class CellPosition
     public override int GetHashCode()
     {
         return (x.GetHashCode(), y.GetHashCode()).GetHashCode();
+    }
+
+    public CellPosition Clone()
+    {
+        return new CellPosition(x, y);
     }
 
     public static bool operator ==(CellPosition lhs, CellPosition rhs)

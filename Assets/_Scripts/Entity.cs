@@ -67,6 +67,13 @@ public class Entity
         return (int)Mathf.Sqrt(dx * dx + dy * dy);
     }
 
+    public int DistanceTo(CellPosition otherPos)
+    {
+        var dx = otherPos.x - position.x;
+        var dy = otherPos.y - position.y;
+        return (int)Mathf.Sqrt(dx * dx + dy * dy);
+    }
+
     public ActionResult ConvertToDeadPlayer()
     {
         var actionResult = new ActionResult();

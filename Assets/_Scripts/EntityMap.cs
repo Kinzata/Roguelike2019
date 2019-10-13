@@ -48,6 +48,11 @@ public class EntityMap : ScriptableObject
         return entities;
     }
 
+    public IEnumerable<Entity> GetEntities(CellPosition pos)
+    {
+        return entities.Where(e => e.position == pos ).Select(e => e);
+    }
+
     public void DrawEntity(Entity entity)
     {
         if (groundMap.isTileVisible(entity.position))

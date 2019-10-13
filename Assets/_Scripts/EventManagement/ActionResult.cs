@@ -5,7 +5,7 @@ public class ActionResult
 {
     private List<Message> messages;
     private List<KeyValuePair<string, Entity>> entityEvents;
-    public bool success;
+    public bool success = false;
 
 
     public ActionResult()

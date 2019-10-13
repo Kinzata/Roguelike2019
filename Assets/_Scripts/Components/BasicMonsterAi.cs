@@ -30,7 +30,6 @@ public class BasicMonsterAi : EntityComponent
                 else
                 {
                     action = new WalkAction(owner.actor, entityMap, groundMap, new CellPosition(moveTile.x, moveTile.y));
-                    action.SetActionResult(actionResult);
                 }
             }
             else
@@ -43,9 +42,7 @@ public class BasicMonsterAi : EntityComponent
                 }
                 else
                 {
-                    // TODO: we'll come back here, need a fight action... getting walk done first
-                    // actionResult.Append(owner.fighterComponent.Attack(target));
-                    action = BuildWaitAction(actionResult, entityMap, groundMap);
+                    action = new MeleeAttackAction(owner.actor, entityMap, groundMap, target.position);
                 }
             }
         }
@@ -65,6 +62,7 @@ public class BasicMonsterAi : EntityComponent
             actionResult.AppendMessage(new Message($"The {owner.name} is confused.  What should it do?", null));
         }
         var action = new WaitAction(owner.actor, entityMap, groundMap);
+        actionResult.success = true;
         action.SetActionResult(actionResult);
         return action;
     }

@@ -29,7 +29,7 @@ public class Fighter : EntityComponent
 
     public ActionResult Attack(Entity target){
         var actionResult = new ActionResult();
-        if( target.fighterComponent == null) { return actionResult; }
+        if( target == null || target.fighterComponent == null) { return actionResult; }
 
         var damage = offensePower - target.fighterComponent.defensePower;
 
