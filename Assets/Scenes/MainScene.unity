@@ -1273,6 +1273,11 @@ PrefabInstance:
       propertyPath: statText
       value: 
       objectReference: {fileID: 294116704}
+    - target: {fileID: 6947487390095096229, guid: 852468c71e4bebb4daa52cf553b23f89,
+        type: 3}
+      propertyPath: maxEnemiesInRoom
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 852468c71e4bebb4daa52cf553b23f89, type: 3}
 --- !u!1001 &8656125700090486692

@@ -7,14 +7,14 @@ public static class IntExtensionMethods
     {
         if (from < to)
         {
-            while (from <= to)
+            while (from < to)
             {
                 yield return from++;
             }
         }
         else
         {
-            while (from >= to)
+            while (from > to)
             {
                 yield return from--;
             }

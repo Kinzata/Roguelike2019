@@ -76,10 +76,11 @@ public class EntityMap : ScriptableObject
 
     public void ClearAll()
     {
-        foreach (var entity in entities)
-        {
-            ClearEntity(entity);
-        }
+        map.ClearAllTiles();
+        // foreach (var entity in entities)
+        // {
+        //     ClearEntity(entity);
+        // }
     }
 
     public void SwapEntityToMap(Entity entity, EntityMap otherMap)

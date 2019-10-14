@@ -239,7 +239,7 @@ public class GroundMap : ScriptableObject
     {
         var numMonsters = Random.Range(0, maxMonsters + 1);
 
-        foreach (int i in 1.To(numMonsters))
+        foreach (int i in 0.To(numMonsters))
         {
             var position = room.GetRandomLocation();
 

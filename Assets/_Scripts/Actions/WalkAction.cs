@@ -1,38 +1,46 @@
 using System.Linq;
 using UnityEngine;
 
-public class WalkAction : Action {
+public class WalkAction : Action
+{
 
     private CellPosition targetPos;
 
-    public WalkAction(Actor actor, EntityMap eMap, GroundMap gMap, CellPosition targetPosition) : base(actor, eMap, gMap){
+    public WalkAction(Actor actor, EntityMap eMap, GroundMap gMap, CellPosition targetPosition) : base(actor, eMap, gMap)
+    {
         this.targetPos = targetPosition;
     }
 
-    public override ActionResult PerformAction(){
+    public override ActionResult PerformAction()
+    {
         var result = new ActionResult();
 
         var isMoveSuccess = MoveTorwards(targetPos, eMap, gMap);
-        if( isMoveSuccess ) {
+        if (isMoveSuccess)
+        {
             result.success = true;
         }
-        else {
+        else
+        {
             // Ok, why can't we move?
             // Is it a wall?
             var worldTile = gMap.GetTileAt(targetPos);
-            if( worldTile != null ) {
+            if (worldTile != null)
+            {
                 // is it blocked?
-                if( worldTile.blocked ){
+                if (worldTile.blocked)
+                {
                     // Ok it's a wall, let's just return normally
                     return result;
                 }
             }
 
             // Does an entity exist?
-            if( eMap.GetEntities(targetPos).Any() ) {
+            if (eMap.GetEntities(targetPos).Any())
+            {
                 result.nextAction = new MeleeAttackAction(actor, eMap, gMap, targetPos);
             }
-            
+
             result.success = false;
         }
 

@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     private Action playerNextAction;
     private GameState gameState;
     private MessageLog log;
+    private int currentActorId = 0;
 
     [Header("Entites")]
     private EntityMap entityMap;
@@ -25,12 +26,12 @@ public class GameManager : MonoBehaviour
     public int mapHeight = 60;
     public IntRange roomSizeRange;
     public int maxRooms = 30;
-    public int maxEnemiesInRoom = 1;
+    public int maxEnemiesInRoom = 2;
 
     [Header("Systems")]
     private FieldOfViewSystem fovSystem;
 
-    private IList<Actor> actors;
+    private List<Actor> actors;
 
     void Start()
     {
@@ -39,6 +40,7 @@ public class GameManager : MonoBehaviour
         roomSizeRange.max = 10;
 
         Application.targetFrameRate = 120;
+        QualitySettings.vSyncCount = 0;
 
         var groundTileMap = GameObject.Find(TileMapType.GroundMap.Name()).GetComponent<Tilemap>();
         groundMap = ScriptableObject.CreateInstance<GroundMap>().Init(mapWidth, mapHeight, groundTileMap);
@@ -49,10 +51,6 @@ public class GameManager : MonoBehaviour
 
         var entityBackgroundTileMap = GameObject.Find(TileMapType.EntityMap_Background.Name()).GetComponent<Tilemap>();
         entityMapBackground = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, groundMap);
-
-        // Test Item
-        var potion = new Entity(startLocation.Clone(), spriteType: SpriteType.Item_Potion_Full, name: "potion");
-        entityMap.AddEntity(potion);
 
         actors = new List<Actor>();
 
@@ -70,6 +68,11 @@ public class GameManager : MonoBehaviour
         {
             actors.Add(new Actor(enemy));
         }
+
+        // Test Item
+        var potion = new Entity(startLocation.Clone(), spriteType: SpriteType.Item_Potion_Full, name: "potion");
+        entityMap.AddEntity(potion);
+
         entityMap.AddEntity(player);
 
         // Setup Systems
@@ -86,7 +89,6 @@ public class GameManager : MonoBehaviour
         log = FindObjectOfType<MessageLog>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         // Handle User Input (yes we're doing this elsewhere too, plan on fixing that)
@@ -98,10 +100,8 @@ public class GameManager : MonoBehaviour
 
         ClearAll();
 
-        var playerTurnResults = PlayerMove();
-        ProcessTurnResults(playerTurnResults);
-        var enemyTurnResults = EnemyMove();
-        ProcessTurnResults(enemyTurnResults);
+        var turnResults = ProcessTurn();
+        ProcessTurnResults(turnResults);
 
         RenderAll();
     }
@@ -118,27 +118,34 @@ public class GameManager : MonoBehaviour
         entityMap.ClearAll();
     }
 
-    ActionResult EnemyMove()
+    ActionResult ProcessTurn()
     {
         var actionResult = new ActionResult();
-        if (gameState == GameState.Turn_Enemy)
+        var actor = actors.ElementAt(currentActorId);
+        var action = actor.GetAction(entityMap, groundMap);
+        var actionToTake = action;
+        if (action == null) { return new ActionResult(); }
+
+        do
         {
-            foreach (Actor actor in actors)
+            actionResult = actionToTake.PerformAction();
+
+            // Cleanup to handle after player potentially changes position
+            Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
+
+            actionToTake = actionResult.nextAction;
+        }
+        while (actionResult.nextAction != null);
+
+
+        if (actionResult.success)
+        {
+            currentActorId = (currentActorId + 1) % actors.Count();
+            if (actor.entity == player)
             {
-                var enemy = actor.entity.enemy && actor.entity.aiComponent != null ? actor.entity.aiComponent : null;
-                if (enemy == null) { continue; }
-
-                var action = enemy.GetAction(entityMap, groundMap);
-                actionResult.Append(action.PerformAction());
-
-                // break processing if player dies
-                if (actionResult.GetEntityEvent("dead").Where(e => e == player).Any())
-                {
-                    break;
-                }
+                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
+                groundMap.UpdateTiles();
             }
-
-            gameState = GameState.Turn_Player;
         }
 
         return actionResult;
@@ -164,6 +171,7 @@ public class GameManager : MonoBehaviour
                 }
 
                 entityMap.SwapEntityToMap(dead, entityMapBackground);
+                actors.Remove(dead.actor);
             }
             foreach (var message in actionResult.GetMessages()) { log.AddMessage(message); }
         }
@@ -200,36 +208,7 @@ public class GameManager : MonoBehaviour
     {
         CellPosition newPosition = new CellPosition(player.position.x + direction.x, player.position.y + direction.y);
         var action = new WalkAction(player.actor, entityMap, groundMap, newPosition);
-        playerNextAction = action;
-    }
-
-    ActionResult PlayerMove()
-    {
-        var actionResult = new ActionResult();
-        if (gameState == GameState.Turn_Player && playerNextAction != null)
-        {
-            do
-            {
-                actionResult = playerNextAction.PerformAction();
-                playerNextAction = actionResult.nextAction;
-
-                // Cleanup to handle after player potentially changes position
-                Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
-                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
-                groundMap.UpdateTiles();
-            }
-            while (actionResult.nextAction != null);
-
-            if (actionResult.success )
-            {
-                // Player ends their turn ONLY IF THEY ACTUALLY DO SOMETHING
-                // Attempting to move into a wall, should not waste a turn (unless they attack it)
-                gameState = GameState.Turn_Enemy;
-            }
-
-            playerNextAction = null;
-        }
-
-        return actionResult;
+        // playerNextAction = action;
+        player.actor.SetNextAction(action);
     }
 }

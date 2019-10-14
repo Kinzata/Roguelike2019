@@ -43,6 +43,10 @@ public class InputManager : MonoBehaviour
                 direction.x = 1; direction.y = 1;
             }
 
+            if( direction.x == 0 && direction.y == 0 ){
+                return;
+            }
+
             gameEvent.Raise(direction);
         }
     }

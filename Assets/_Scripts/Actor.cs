@@ -1,6 +1,7 @@
 public class Actor
 {
     public Entity entity;
+    private Action nextAction;
 
     public Actor(Entity entity)
     {
@@ -14,19 +15,21 @@ public class Actor
         this.entity.SetActor(this);
     }
 
+    public void SetNextAction(Action action){
+        nextAction = action;
+    }
+
     public Action GetAction(EntityMap eMap, GroundMap gMap)
     {
-
-        Action action;
         if (entity.enemy && entity.aiComponent != null)
         {
             var ai = entity.aiComponent;
-            action = ai.GetAction(eMap, gMap);
+            nextAction = ai.GetAction(eMap, gMap);
         }
-        else {
-            // If we're not an enemy or don't have an aiController... might as well wait?  We need a player check here, will come later
-            action = new WaitAction(this, eMap, gMap);
-        }
+
+        var action = nextAction;
+        nextAction = null;
+
         return action;
     }
 }
