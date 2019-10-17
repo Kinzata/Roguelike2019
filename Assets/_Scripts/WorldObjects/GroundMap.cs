@@ -285,7 +285,7 @@ public class GroundMap : ScriptableObject
             ai = new BasicMonsterAi();
         }
 
-        return new Entity(
+        return Entity.CreateEntity().Init(
             position,
             spriteType,
             color,

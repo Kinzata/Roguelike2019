@@ -8,24 +8,34 @@ The Entity is just that, an entity.
 
 It has a position, sprite, color and knows how to update it's position
  */
-public class Entity
+public class Entity : MonoBehaviour
 {
     public Actor actor;
     public CellPosition position;
     public Sprite sprite;
     public Color color;
-    public WorldTile tile;
+    private SpriteRenderer spriteRenderer;
     public bool blocks;
-    public string name;
     public bool enemy;
+    private bool isVisible;
     public Player playerComponent;
     public Fighter fighterComponent;
     public BasicMonsterAi aiComponent;
 
-    public Entity(CellPosition pos, SpriteType spriteType = SpriteType.Nothing, Color? color = null, bool blocks = false, string name = "mysterious enemy", bool enemy = false,
+    public static Entity CreateEntity(){
+        var obj = new GameObject();
+        var entity = obj.AddComponent<Entity>();
+        entity.spriteRenderer = obj.AddComponent<SpriteRenderer>();
+        var container = GameObject.FindWithTag("EntityContainer");
+        obj.transform.SetParent(container.transform);
+        return entity;
+    }
+
+    public Entity Init(CellPosition pos, SpriteType spriteType = SpriteType.Nothing, Color? color = null, bool blocks = false, string name = "mysterious enemy", bool enemy = false,
         Player player = null, Fighter fighter = null, BasicMonsterAi ai = null)
     {
         this.position = pos;
+        this.transform.position = pos.ToVector3Int();
         this.sprite = SpriteLoader.instance.LoadSprite(spriteType);
         this.color = color ?? Color.magenta;
         this.blocks = blocks;
@@ -35,9 +45,8 @@ public class Entity
         this.fighterComponent = fighter;
         this.aiComponent = ai;
 
-        tile = Tile.CreateInstance<WorldTile>();
-        tile.sprite = this.sprite;
-        tile.color = this.color;
+        spriteRenderer.sprite = this.sprite;
+        spriteRenderer.color = this.color;
 
         if (player != null)
         {
@@ -53,11 +62,22 @@ public class Entity
         {
             ai.owner = this;
         }
+
+        return this;
     }
 
     public void SetActor(Actor actor)
     {
         this.actor = actor;
+    }
+
+    public void SetVisible(bool visible){
+        if( visible ){
+            spriteRenderer.enabled = true;
+        }
+        else {
+            spriteRenderer.enabled = false;
+        }
     }
 
     public int DistanceTo(Entity other)
@@ -80,8 +100,8 @@ public class Entity
         sprite = SpriteLoader.instance.LoadSprite(SpriteType.Remains_Bones);
         color = new Color(.8f, .8f, .8f, 1);
 
-        tile.sprite = sprite;
-        tile.color = color;
+        spriteRenderer.sprite = sprite;
+        spriteRenderer.color = color;
 
         actionResult.AppendMessage(new Message("You died!", Color.red));
         return actionResult;
@@ -96,8 +116,8 @@ public class Entity
 
         color = new Color(.8f, .8f, .8f, 1);
 
-        tile.sprite = sprite;
-        tile.color = color;
+        spriteRenderer.sprite = sprite;
+        spriteRenderer.color = color;
 
         name = $"remains of {name.ToPronoun()}";
         blocks = false;

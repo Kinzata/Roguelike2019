@@ -52,6 +52,8 @@ public class WalkAction : Action
         actor.entity.position.x += dx;
         actor.entity.position.y += dy;
 
+        actor.entity.transform.position = actor.entity.position.ToVector3Int();
+
         return actor.entity.position;
     }
 

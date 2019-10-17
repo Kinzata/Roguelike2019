@@ -57,7 +57,7 @@ public class GameManager : MonoBehaviour
         // Build Player
         var fighter = new Fighter(30, 2, 5);
         var playerComponent = new Player();
-        player = new Entity(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player", player: playerComponent, fighter: fighter);
+        player = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player", player: playerComponent, fighter: fighter);
         actors.Add(new Actor(player));
 
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Test Item
-        var potion = new Entity(startLocation.Clone(), spriteType: SpriteType.Item_Potion_Full, name: "potion");
+        var potion = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Item_Potion_Full, name: "potion");
         entityMap.AddEntity(potion);
 
         entityMap.AddEntity(player);
@@ -78,6 +78,8 @@ public class GameManager : MonoBehaviour
         // Setup Systems
         fovSystem = new FieldOfViewSystem(groundMap);
         fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
+
+        RunVisibilitySystem();
 
         // Final Setup
         InitEventListeners();
@@ -94,28 +96,16 @@ public class GameManager : MonoBehaviour
         // Handle User Input (yes we're doing this elsewhere too, plan on fixing that)
         if (Input.GetMouseButtonDown(0))
         {
-            var tilePos = groundMap.map.WorldToCell(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+            var mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mPos.x += 0.5f;
+            mPos.y += 0.5f;
+            var tilePos = groundMap.map.WorldToCell(mPos);
             ReportObjectsAtPosition(new CellPosition(tilePos));
         }
 
-        ClearAll();
-
         var turnResults = ProcessTurn();
         ProcessTurnResults(turnResults);
-
-        RenderAll();
-    }
-
-    void RenderAll()
-    {
-        entityMapBackground.RenderAll();
-        entityMap.RenderAll();
-    }
-
-    public void ClearAll()
-    {
-        entityMapBackground.ClearAll();
-        entityMap.ClearAll();
+     
     }
 
     ActionResult ProcessTurn()
@@ -148,6 +138,8 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        ProcessNewState();
+
         return actionResult;
     }
 
@@ -175,6 +167,15 @@ public class GameManager : MonoBehaviour
             }
             foreach (var message in actionResult.GetMessages()) { log.AddMessage(message); }
         }
+    }
+
+    void ProcessNewState(){
+        RunVisibilitySystem();
+    }
+
+    void RunVisibilitySystem(){
+        entityMapBackground.RenderAll();
+        entityMap.RenderAll();
     }
 
     private void ReportObjectsAtPosition(CellPosition pos)

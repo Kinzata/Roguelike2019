@@ -55,10 +55,7 @@ public class EntityMap : ScriptableObject
 
     public void DrawEntity(Entity entity)
     {
-        if (groundMap.isTileVisible(entity.position))
-        {
-            map.SetTile(entity.position.ToVector3Int(), entity.tile);
-        }
+        entity.SetVisible(groundMap.isTileVisible(entity.position));
     }
 
     public void RenderAll()
@@ -71,16 +68,15 @@ public class EntityMap : ScriptableObject
 
     public void ClearEntity(Entity entity)
     {
-        map.SetTile(entity.position.ToVector3Int(), null);
+        entity.SetVisible(false);
     }
 
     public void ClearAll()
     {
-        map.ClearAllTiles();
-        // foreach (var entity in entities)
-        // {
-        //     ClearEntity(entity);
-        // }
+        foreach (var entity in entities)
+        {
+            ClearEntity(entity);
+        }
     }
 
     public void SwapEntityToMap(Entity entity, EntityMap otherMap)
