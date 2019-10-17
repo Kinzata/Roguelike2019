@@ -23,14 +23,9 @@ public class EntityMap : ScriptableObject
         return entities.Where(e => e.position.x == x && e.position.y == y && e.blocks).FirstOrDefault();
     }
 
-    public IEnumerable<BasicMonsterAi> GetEnemies()
-    {
-        return entities.Where(e => e.aiComponent != null).Select(e => e.aiComponent);
-    }
-
     public Entity GetPlayer()
     {
-        return entities.Where(e => e.playerComponent != null).Select(e => e).FirstOrDefault();
+        return entities.Where(e => e.GetComponent<Player>() != null).Select(e => e).FirstOrDefault();
     }
 
     public void AddEntity(Entity entity)

@@ -21,9 +21,8 @@ public class Actor
 
     public Action GetAction(EntityMap eMap, GroundMap gMap)
     {
-        if (entity.enemy && entity.aiComponent != null)
+        if (entity.GetComponent<BasicMonsterAi>() is BasicMonsterAi ai)
         {
-            var ai = entity.aiComponent;
             nextAction = ai.GetAction(eMap, gMap);
         }
 

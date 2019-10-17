@@ -263,8 +263,8 @@ public class GroundMap : ScriptableObject
         SpriteType spriteType;
         Color color;
         string name;
-        Fighter fighter;
-        BasicMonsterAi ai;
+        (int maxHp, int defense, int offense) figherValues;
+
 
         if (Random.value <= .8f)
         {
@@ -272,8 +272,7 @@ public class GroundMap : ScriptableObject
             spriteType = SpriteType.Monster_Orc;
             color = new Color(.8f, 0, 0, 1f);
             name = "orc";
-            fighter = new Fighter(10, 0, 3);
-            ai = new BasicMonsterAi();
+            figherValues = (10, 0, 3);
         }
         else
         {
@@ -281,19 +280,20 @@ public class GroundMap : ScriptableObject
             spriteType = SpriteType.Monster_Troll;
             color = new Color(.8f, 0, 0, 1f);
             name = "troll";
-            fighter = new Fighter(16, 1, 4);
-            ai = new BasicMonsterAi();
+            figherValues = (16, 1, 4);
         }
 
-        return Entity.CreateEntity().Init(
+        var entity = Entity.CreateEntity().Init(
             position,
             spriteType,
             color,
             blocks: true,
-            name: name,
-            enemy: true,
-            fighter: fighter,
-            ai: ai);
+            name: name
+        );
+
+        entity.gameObject.AddComponent<Fighter>().Init(figherValues.maxHp, figherValues.defense, figherValues.offense).owner = entity;
+        entity.gameObject.AddComponent<BasicMonsterAi>().owner = entity;
+        return entity;
     }
 
     void InitializeTiles()

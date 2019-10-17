@@ -18,9 +18,9 @@ public class PlayerStatInterface : MonoBehaviour
 
     public void SetPlayer(Entity entity)
     {
-        if (entity.playerComponent == null) { return; }
+        if (entity.GetComponent<Player>() == null) { return; }
         player = entity;
-        fighter = player.fighterComponent;
+        fighter = player.GetComponent<Fighter>();
     }
 
 
@@ -30,8 +30,8 @@ public class PlayerStatInterface : MonoBehaviour
     {
         if (player == null) { return; }
 
-        var hp = player.fighterComponent.hp;
-        var maxHp = player.fighterComponent.maxHp;
+        var hp = fighter.hp;
+        var maxHp = fighter.maxHp;
 
         var hpPercent = (float)hp / maxHp;
         SetHpText(hpPercent);

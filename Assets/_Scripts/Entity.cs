@@ -16,11 +16,6 @@ public class Entity : MonoBehaviour
     public Color color;
     private SpriteRenderer spriteRenderer;
     public bool blocks;
-    public bool enemy;
-    private bool isVisible;
-    public Player playerComponent;
-    public Fighter fighterComponent;
-    public BasicMonsterAi aiComponent;
 
     public static Entity CreateEntity(){
         var obj = new GameObject();
@@ -31,8 +26,7 @@ public class Entity : MonoBehaviour
         return entity;
     }
 
-    public Entity Init(CellPosition pos, SpriteType spriteType = SpriteType.Nothing, Color? color = null, bool blocks = false, string name = "mysterious enemy", bool enemy = false,
-        Player player = null, Fighter fighter = null, BasicMonsterAi ai = null)
+    public Entity Init(CellPosition pos, SpriteType spriteType = SpriteType.Nothing, Color? color = null, bool blocks = false, string name = "mysterious enemy")
     {
         this.position = pos;
         this.transform.position = pos.ToVector3Int();
@@ -40,28 +34,11 @@ public class Entity : MonoBehaviour
         this.color = color ?? Color.magenta;
         this.blocks = blocks;
         this.name = name;
-        this.enemy = enemy;
-        this.playerComponent = player;
-        this.fighterComponent = fighter;
-        this.aiComponent = ai;
 
         spriteRenderer.sprite = this.sprite;
         spriteRenderer.color = this.color;
 
-        if (player != null)
-        {
-            player.owner = this;
-        }
-
-        if (fighter != null)
-        {
-            fighter.owner = this;
-        }
-
-        if (ai != null)
-        {
-            ai.owner = this;
-        }
+        
 
         return this;
     }
@@ -121,9 +98,12 @@ public class Entity : MonoBehaviour
 
         name = $"remains of {name.ToPronoun()}";
         blocks = false;
-        fighterComponent = null;
-        aiComponent = null;
-        enemy = false;
+
+
+        // Probably a better way to do this
+        // Common method on EntityComponent?
+        Destroy(gameObject.GetComponent<Fighter>());
+        Destroy(gameObject.GetComponent<BasicMonsterAi>());
 
         return actionResult;
     }

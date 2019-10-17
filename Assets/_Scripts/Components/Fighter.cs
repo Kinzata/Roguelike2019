@@ -7,12 +7,14 @@ public class Fighter : EntityComponent
     public int defensePower;
     public int offensePower;
 
-    public Fighter(int maxHp, int defensePower, int offensePower)
+    public Fighter Init(int maxHp, int defensePower, int offensePower)
     {
         this.maxHp = maxHp;
         this.hp = maxHp;
         this.defensePower = defensePower;
         this.offensePower = offensePower;
+
+        return this;
     }
 
     public ActionResult TakeDamage(int amount){
@@ -29,13 +31,14 @@ public class Fighter : EntityComponent
 
     public ActionResult Attack(Entity target){
         var actionResult = new ActionResult();
-        if( target == null || target.fighterComponent == null) { return actionResult; }
+        var fighterComponent = target?.gameObject.GetComponent<Fighter>();
+        if( fighterComponent == null) { return actionResult; }
 
-        var damage = offensePower - target.fighterComponent.defensePower;
+        var damage = offensePower - fighterComponent.defensePower;
 
         if( damage > 0 ){
             actionResult.AppendMessage(new Message($"{owner.GetColoredName()} attacks {target.GetColoredName()} for {damage} hit points!", null));
-            actionResult.Append(target.fighterComponent.TakeDamage(damage));
+            actionResult.Append(fighterComponent.TakeDamage(damage));
         }
         else {
             actionResult.AppendMessage(new Message($"{owner.GetColoredName()} attacks {target.GetColoredName()} for no damage.", null));

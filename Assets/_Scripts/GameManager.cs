@@ -55,9 +55,9 @@ public class GameManager : MonoBehaviour
         actors = new List<Actor>();
 
         // Build Player
-        var fighter = new Fighter(30, 2, 5);
-        var playerComponent = new Player();
-        player = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player", player: playerComponent, fighter: fighter);
+        player = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player");
+        player.gameObject.AddComponent<Player>().owner = player;
+        player.gameObject.AddComponent<Fighter>().Init(30, 2, 5).owner = player;
         actors.Add(new Actor(player));
 
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);

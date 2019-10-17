@@ -35,7 +35,7 @@ public class BasicMonsterAi : EntityComponent
             else
             {
                 // If we're in melee range, attack instead of move
-                if (owner.fighterComponent == null)
+                if (owner.GetComponent<Fighter>() == null)
                 {
                     // Can't fight though... ha
                     action = BuildWaitAction(actionResult, entityMap, groundMap);
