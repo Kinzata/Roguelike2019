@@ -7,8 +7,6 @@ public class GameManager : MonoBehaviour
 {
     private Entity player;
     public PlayerStatInterface statText;
-    private GameEventListener moveListener;
-    private Action playerNextAction;
     private GameState gameState;
     private MessageLog log;
     private int currentActorId = 0;
@@ -83,7 +81,6 @@ public class GameManager : MonoBehaviour
         RunVisibilitySystem();
 
         // Final Setup
-        InitEventListeners();
         groundMap.UpdateTiles();
 
         statText.SetPlayer(player);
@@ -95,18 +92,11 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         // Handle User Input (yes we're doing this elsewhere too, plan on fixing that)
-        if (Input.GetMouseButtonDown(0))
-        {
-            var mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            mPos.x += 0.5f;
-            mPos.y += 0.5f;
-            var tilePos = groundMap.map.WorldToCell(mPos);
-            ReportObjectsAtPosition(new CellPosition(tilePos));
-        }
+        HandleUserInput();
 
         var turnResults = ProcessTurn();
         ProcessTurnResults(turnResults);
-     
+
     }
 
     ActionResult ProcessTurn()
@@ -170,11 +160,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void ProcessNewState(){
+    void ProcessNewState()
+    {
         RunVisibilitySystem();
     }
 
-    void RunVisibilitySystem(){
+    void RunVisibilitySystem()
+    {
         entityMapBackground.RenderAll();
         entityMap.RenderAll();
     }
@@ -196,21 +188,58 @@ public class GameManager : MonoBehaviour
         log.AddMessage(new Message(message, null));
     }
 
-    /** Player specific event functions */
-    private void InitEventListeners()
-    {
-        moveListener = gameObject.AddComponent<GameEventListener>();
-        moveListener.Event = EventManager.instance.GetGameEvent(EventManager.EventType.PlayerMove);
-        moveListener.Register();
-        moveListener.Response = new UnityEventWithCoords();
-        moveListener.Response.AddListener(SetMoveDirection);
-    }
-
     void SetMoveDirection(Vector2Int direction)
     {
         CellPosition newPosition = new CellPosition(player.position.x + direction.x, player.position.y + direction.y);
         var action = new WalkAction(player.actor, entityMap, groundMap, newPosition);
         // playerNextAction = action;
         player.actor.SetNextAction(action);
+    }
+
+    void HandleUserInput()
+    {
+        // Look Action
+        if (Input.GetMouseButtonDown(0))
+        {
+            var mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mPos.x += 0.5f;
+            mPos.y += 0.5f;
+            var tilePos = groundMap.map.WorldToCell(mPos);
+            ReportObjectsAtPosition(new CellPosition(tilePos));
+        }
+
+        Vector2Int direction = Vector2Int.zero;
+        // Cardinals
+        if (Input.GetKeyDown(KeyCode.Keypad4))
+            direction.x = -1;
+        if (Input.GetKeyDown(KeyCode.Keypad6))
+            direction.x = 1;
+        if (Input.GetKeyDown(KeyCode.Keypad2))
+            direction.y = -1;
+        if (Input.GetKeyDown(KeyCode.Keypad8))
+            direction.y = 1;
+
+        // Diagonals
+        if (Input.GetKeyDown(KeyCode.Keypad7))
+        {
+            direction.x = -1; direction.y = 1;
+        }
+        if (Input.GetKeyDown(KeyCode.Keypad1))
+        {
+            direction.x = -1; direction.y = -1;
+        }
+        if (Input.GetKeyDown(KeyCode.Keypad3))
+        {
+            direction.x = 1; direction.y = -1;
+        }
+        if (Input.GetKeyDown(KeyCode.Keypad9))
+        {
+            direction.x = 1; direction.y = 1;
+        }
+
+        if (direction.x != 0 || direction.y != 0)
+        {
+            SetMoveDirection(direction);
+        }
     }
 }
