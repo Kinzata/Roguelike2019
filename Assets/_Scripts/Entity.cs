@@ -14,7 +14,7 @@ public class Entity : MonoBehaviour
     public CellPosition position;
     public Sprite sprite;
     public Color color;
-    private SpriteRenderer spriteRenderer;
+    public SpriteRenderer spriteRenderer;
     public bool blocks;
 
     public static Entity CreateEntity(){
@@ -37,9 +37,7 @@ public class Entity : MonoBehaviour
 
         spriteRenderer.sprite = this.sprite;
         spriteRenderer.color = this.color;
-
         
-
         return this;
     }
 

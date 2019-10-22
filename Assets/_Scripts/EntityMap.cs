@@ -5,7 +5,6 @@ using UnityEngine.Tilemaps;
 
 public class EntityMap : ScriptableObject
 {
-
     public Tilemap map;
     public GroundMap groundMap;
     private IList<Entity> entities = new List<Entity>();
@@ -30,6 +29,7 @@ public class EntityMap : ScriptableObject
 
     public void AddEntity(Entity entity)
     {
+        entity.spriteRenderer.sortingLayerID = map.GetComponent<TilemapRenderer>().sortingLayerID;
         entities.Add(entity);
     }
 

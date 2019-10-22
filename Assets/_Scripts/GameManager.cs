@@ -26,7 +26,8 @@ public class GameManager : MonoBehaviour
     public int mapHeight = 60;
     public IntRange roomSizeRange;
     public int maxRooms = 30;
-    public int maxEnemiesInRoom = 2;
+    public int maxEnemiesInRoom = 3;
+    public int maxItemsInRoom = 2;
 
     [Header("Systems")]
     private FieldOfViewSystem fovSystem;
@@ -43,8 +44,9 @@ public class GameManager : MonoBehaviour
         QualitySettings.vSyncCount = 0;
 
         var groundTileMap = GameObject.Find(TileMapType.GroundMap.Name()).GetComponent<Tilemap>();
-        groundMap = ScriptableObject.CreateInstance<GroundMap>().Init(mapWidth, mapHeight, groundTileMap);
-        var startLocation = groundMap.MakeMap(maxRooms, roomSizeRange, mapWidth, mapHeight);
+        var levelBuilder = new LevelBuilder();
+        groundMap = levelBuilder.MakeMap(maxRooms, roomSizeRange, mapWidth, mapHeight, groundTileMap);
+        var startLocation = levelBuilder.GetStartPosition();
 
         var entityTileMap = GameObject.Find(TileMapType.EntityMap.Name()).GetComponent<Tilemap>();
         entityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityTileMap, groundMap);
@@ -63,15 +65,13 @@ public class GameManager : MonoBehaviour
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
 
         // Build Enemies
-        var newEntities = groundMap.FillRoomsWithEnemies(entityMap.GetEntities(), maxEnemiesInRoom);
+        var newEntities = levelBuilder.FillRoomsWithEntityActors(entityMap.GetEntities(), maxEnemiesInRoom, maxItemsInRoom);
         foreach (var enemy in newEntities)
         {
             actors.Add(new Actor(enemy));
         }
 
-        // Test Item
-        var potion = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Item_Potion_Full, name: "potion");
-        entityMap.AddEntity(potion);
+        levelBuilder.FillRoomsWithPassiveEntities(entityMapBackground.GetEntities(), maxEnemiesInRoom, maxItemsInRoom);
 
         entityMap.AddEntity(player);
 

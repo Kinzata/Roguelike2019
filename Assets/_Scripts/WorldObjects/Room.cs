@@ -42,7 +42,7 @@ public class Room
         {
             for (int y = (int)rect.yMin + 1; y < (int)rect.yMax; y++)
             {
-                map.SetTileToFloor(map.tiles[x, y]);
+                map.SetTileToFloor(x, y);
             }
         }
 
