@@ -2,8 +2,6 @@ using System.Linq;
 
 public class PickupItemAction : Action
 {
-    private CellPosition targetPos;
-
     public PickupItemAction(Actor actor, EntityMap eMap, GroundMap gMap) : base(actor, eMap, gMap)
     {
     }
@@ -24,7 +22,8 @@ public class PickupItemAction : Action
             else
             {
                 var item = targets.FirstOrDefault();
-                result.AppendMessage(new Message($"{actor.entity.GetColoredName()} picks up {item.owner.GetColoredName()}.", null));
+                var action = new AddItemToInventoryAction(actor, eMap, gMap, item);
+                result.nextAction = action;
             }
         }
         else
@@ -32,7 +31,7 @@ public class PickupItemAction : Action
             result.AppendMessage(new Message($"{actor.entity.GetColoredName()} can not carry things.", null));
         }
 
-        result.success = true;
+        
         return result;
     }
 }

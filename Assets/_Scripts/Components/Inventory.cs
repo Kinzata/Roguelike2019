@@ -11,4 +11,17 @@ public class Inventory : EntityComponent
 
         return this;
     }
+
+    public bool HasRoom() {
+        return heldItems.Count < capacity;
+    }
+
+    public ActionResult AddItem(Item item){
+        var result = new ActionResult();
+
+        heldItems.Add(item);
+
+        result.AppendMessage(new Message($"{item.owner.GetColoredName()} added to {owner.GetColoredName()}'s inventory.", null));
+        return result;
+    }
 }
