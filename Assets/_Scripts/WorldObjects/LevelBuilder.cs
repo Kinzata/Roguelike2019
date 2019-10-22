@@ -103,8 +103,7 @@ public class LevelBuilder
         IList<Entity> newEntities = new List<Entity>();
         foreach (Room room in map.rooms)
         {
-            newEntities = FillRoomWithEnemies(entities, room, maxMonstersPerRoom);
-            entities.Concat(newEntities);
+            newEntities = FillRoomWithEnemies(newEntities, room, maxMonstersPerRoom);
         }
 
         return newEntities;
@@ -112,12 +111,13 @@ public class LevelBuilder
 
     public IList<Entity> FillRoomsWithPassiveEntities(IList<Entity> entities, int maxMonstersPerRoom, int maxItemsPerRoom)
     {
+        IList<Entity> newEntities = new List<Entity>();
         foreach (Room room in map.rooms)
         {
-            entities = FillRoomWithItems(entities, room, maxItemsPerRoom);
+            newEntities = FillRoomWithItems(newEntities, room, maxItemsPerRoom);
         }
 
-        return entities;
+        return newEntities;
     }
 
     private IList<Entity> FillRoomWithEnemies(IList<Entity> entities, Room room, int maxMonsters)

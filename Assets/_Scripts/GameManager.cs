@@ -68,9 +68,14 @@ public class GameManager : MonoBehaviour
         foreach (var enemy in newEntities)
         {
             actors.Add(new Actor(enemy));
+            entityMap.AddEntity(enemy);
         }
 
-        levelBuilder.FillRoomsWithPassiveEntities(entityMapBackground.GetEntities(), maxEnemiesInRoom, maxItemsInRoom);
+        var passiveEntities = levelBuilder.FillRoomsWithPassiveEntities(entityMapBackground.GetEntities(), maxEnemiesInRoom, maxItemsInRoom);
+        foreach( var passiveEntity in passiveEntities ){
+            entityMapBackground.AddEntity(passiveEntity);
+        }
+        
 
         entityMap.AddEntity(player);
 
@@ -192,7 +197,6 @@ public class GameManager : MonoBehaviour
     {
         CellPosition newPosition = new CellPosition(player.position.x + direction.x, player.position.y + direction.y);
         var action = new WalkAction(player.actor, entityMap, groundMap, newPosition);
-        // playerNextAction = action;
         player.actor.SetNextAction(action);
     }
 
@@ -208,7 +212,17 @@ public class GameManager : MonoBehaviour
             ReportObjectsAtPosition(new CellPosition(tilePos));
         }
 
-        Vector2Int direction = Vector2Int.zero;
+        HandleMovementKeys();
+       
+       if( Input.GetKeyDown(KeyCode.G) ){
+           // Pickup!
+           var action = new PickupItemAction(player.actor, entityMapBackground, groundMap);
+           player.actor.SetNextAction(action);
+       }
+    }
+
+    void HandleMovementKeys(){
+         Vector2Int direction = Vector2Int.zero;
         // Cardinals
         if (Input.GetKeyDown(KeyCode.Keypad4))
             direction.x = -1;
