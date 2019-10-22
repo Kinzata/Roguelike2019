@@ -60,6 +60,7 @@ public class GameManager : MonoBehaviour
         player = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player");
         player.gameObject.AddComponent<Player>().owner = player;
         player.gameObject.AddComponent<Fighter>().Init(30, 2, 5).owner = player;
+        player.gameObject.AddComponent<Inventory>().Init(capacity: 10).owner = player;
         actors.Add(new Actor(player));
 
         Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);

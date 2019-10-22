@@ -209,7 +209,7 @@ public class LevelBuilder
         SpriteType spriteType;
         Color color;
         string name;
-
+        bool isItem = false;
 
         // if (Random.value <= 1f)
         // {
@@ -217,6 +217,7 @@ public class LevelBuilder
         spriteType = SpriteType.Item_Potion_Full;
         color = new Color32(63, 191, 191, 255);
         name = "potion";
+        isItem = true;
         // }
 
         var entity = Entity.CreateEntity().Init(
@@ -226,6 +227,10 @@ public class LevelBuilder
             blocks: false,
             name: name
         );
+
+        if( isItem ){
+            entity.gameObject.AddComponent<Item>().owner = entity;
+        }
 
         return entity;
     }
