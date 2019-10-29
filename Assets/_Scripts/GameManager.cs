@@ -30,6 +30,11 @@ public class GameManager : MonoBehaviour
     [Header("Systems")]
     private FieldOfViewSystem fovSystem;
 
+    [Header("Settings")]
+    public float cameraAdjustmentPercent = .8f;
+    public float viewportWidth = 5f;
+    public int playerViewDistance = 10;
+
     private List<Actor> actors;
 
     void Start()
@@ -61,7 +66,8 @@ public class GameManager : MonoBehaviour
         player.gameObject.AddComponent<Inventory>().Init(capacity: 10).owner = player;
         actors.Add(new Actor(player));
 
-        Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
+        SetDesiredScreenSize();
+        Camera.main.transform.position = new Vector3(player.position.x + CalculateCameraAdjustment(), player.position.y, Camera.main.transform.position.z);
 
         // Build Enemies
         var newEntities = levelBuilder.FillRoomsWithEntityActors(entityMap.GetEntities(), maxEnemiesInRoom, maxItemsInRoom);
@@ -81,7 +87,7 @@ public class GameManager : MonoBehaviour
 
         // Setup Systems
         fovSystem = new FieldOfViewSystem(groundMap);
-        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
+        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
 
         RunVisibilitySystem();
 
@@ -117,7 +123,8 @@ public class GameManager : MonoBehaviour
             actionResult = actionToTake.PerformAction();
 
             // Cleanup to handle after player potentially changes position
-            Camera.main.transform.position = new Vector3(player.position.x, player.position.y, Camera.main.transform.position.z);
+            var adjustment = 
+            Camera.main.transform.position = new Vector3(player.position.x + CalculateCameraAdjustment(), player.position.y, Camera.main.transform.position.z);
 
             actionToTake = actionResult.nextAction;
         }
@@ -129,7 +136,7 @@ public class GameManager : MonoBehaviour
             currentActorId = (currentActorId + 1) % actors.Count();
             if (actor.entity == player)
             {
-                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), 10);
+                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
                 groundMap.UpdateTiles();
             }
         }
@@ -255,5 +262,24 @@ public class GameManager : MonoBehaviour
         {
             SetMoveDirection(direction);
         }
+    }
+
+    void SetDesiredScreenSize() {
+        float aspect = (float)Screen.width / (float)Screen.height;
+        var totalWidth = 1f + (float) (viewportWidth * 2f / cameraAdjustmentPercent);
+        var screenSize = (float)totalWidth / 2f / aspect;
+
+        Camera.main.orthographicSize = screenSize;
+    }
+
+    float CalculateCameraAdjustment(){
+        var value = 0f;
+
+        float aspect = (float)Screen.width / (float)Screen.height;
+        var totalWidth = (float) viewportWidth * 2f / cameraAdjustmentPercent;
+        // var screenSize = totalWidth / 2 / aspect;
+        value = totalWidth - (viewportWidth * 2f);
+
+        return value / 2;
     }
 }

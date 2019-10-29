@@ -112,6 +112,12 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!20 &70801030 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 1826860858873884364, guid: 8a963b498c708ff44b1a5536cd0783a4,
+    type: 3}
+  m_PrefabInstance: {fileID: 1826860859319359155}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &294116699
 GameObject:
   m_ObjectHideFlags: 0
@@ -125,6 +131,7 @@ GameObject:
   - component: {fileID: 294116701}
   - component: {fileID: 294116703}
   - component: {fileID: 294116704}
+  - component: {fileID: 294116705}
   m_Layer: 5
   m_Name: StatText
   m_TagString: Untagged
@@ -149,7 +156,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 250, y: 0}
+  m_SizeDelta: {x: 723, y: 0}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &294116701
 MonoBehaviour:
@@ -200,7 +207,7 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 31.25
+  m_fontSize: 72
   m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -305,11 +312,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 294116699}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14ee5397eb45f9b45bd81fb09a7b1caa, type: 3}
+  m_Script: {fileID: 11500000, guid: b75e4db6a9b756047b4e39aad0acf56f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   StatText: {fileID: 0}
   player: {fileID: 0}
+--- !u!114 &294116705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 294116699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebbf9251112405e46a34c41ad99fdee4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  percent: 0.2
 --- !u!1 &418929598
 GameObject:
   m_ObjectHideFlags: 0
@@ -595,6 +615,7 @@ GameObject:
   - component: {fileID: 1281356722}
   - component: {fileID: 1281356724}
   - component: {fileID: 1281356723}
+  - component: {fileID: 1281356725}
   m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
@@ -619,7 +640,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 250, y: 0}
+  m_SizeDelta: {x: 723, y: 0}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &1281356723
 MonoBehaviour:
@@ -634,7 +655,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.11320752, g: 0.106265545, b: 0.106265545, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -656,6 +677,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1281356721}
   m_CullTransparentMesh: 0
+--- !u!114 &1281356725
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1281356721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebbf9251112405e46a34c41ad99fdee4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  percent: 0.2
 --- !u!1 &1313379058
 GameObject:
   m_ObjectHideFlags: 0
@@ -705,7 +739,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_UiScaleMode: 0
-  m_ReferencePixelsPerUnit: 100
+  m_ReferencePixelsPerUnit: 16
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
   m_ScreenMatchMode: 0
@@ -724,7 +758,7 @@ Canvas:
   m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_Camera: {fileID: 70801030}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -1239,6 +1273,11 @@ PrefabInstance:
         type: 3}
       propertyPath: maxEnemiesInRoom
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6947487390095096229, guid: 852468c71e4bebb4daa52cf553b23f89,
+        type: 3}
+      propertyPath: viewportWidth
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 852468c71e4bebb4daa52cf553b23f89, type: 3}

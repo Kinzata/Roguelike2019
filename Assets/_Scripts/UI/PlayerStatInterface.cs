@@ -9,7 +9,7 @@ public class PlayerStatInterface : MonoBehaviour
     public Entity player;
     private Fighter fighter;
 
-    private const string HpIdentifier = "HP: ";
+    private const string HpIdentifier = "HP:";
 
     void Start()
     {
