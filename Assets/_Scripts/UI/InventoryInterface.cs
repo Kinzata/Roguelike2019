@@ -19,7 +19,7 @@ public class InventoryInterface : MonoBehaviour
     public void Show() {
         gameObject.SetActive(true);
         for(int i = 0; i < _inventory.heldItems.Count; i++){
-            itemSlots[0].Set(_inventory.heldItems[0]);
+            itemSlots[i].Set(_inventory.heldItems[i]);
         }
     }
 
