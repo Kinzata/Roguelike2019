@@ -5,19 +5,21 @@ using UnityEngine.Tilemaps;
 
 public class GameManager : MonoBehaviour
 {
-    private Entity player;
+    private Entity _player;
     public PlayerStatInterface statText;
-    private GameState gameState;
-    private MessageLog log;
-    private int currentActorId = 0;
+    public InventoryInterface inventoryInterface;
+    private GameState _gameState;
+    private GameState _tempGameState;
+    private MessageLog _log;
+    private int _currentActorId = 0;
 
     [Header("Entites")]
-    private EntityMap entityMap;
-    private EntityMap entityMapBackground;
+    private EntityMap _entityMap;
+    private EntityMap _entityMapBackground;
 
 
     [Header("Floor")]
-    private GroundMap groundMap;
+    private GroundMap _groundMap;
 
     [Header("World Properties")]
     public int mapWidth = 80;
@@ -35,7 +37,7 @@ public class GameManager : MonoBehaviour
     public float viewportWidth = 5f;
     public int playerViewDistance = 10;
 
-    private List<Actor> actors;
+    private List<Actor> _actors;
 
     void Start()
     {
@@ -48,56 +50,57 @@ public class GameManager : MonoBehaviour
 
         var groundTileMap = GameObject.Find(TileMapType.GroundMap.Name()).GetComponent<Tilemap>();
         var levelBuilder = new LevelBuilder();
-        groundMap = levelBuilder.MakeMap(maxRooms, roomSizeRange, mapWidth, mapHeight, groundTileMap);
+        _groundMap = levelBuilder.MakeMap(maxRooms, roomSizeRange, mapWidth, mapHeight, groundTileMap);
         var startLocation = levelBuilder.GetStartPosition();
 
         var entityTileMap = GameObject.Find(TileMapType.EntityMap.Name()).GetComponent<Tilemap>();
-        entityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityTileMap, groundMap);
+        _entityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityTileMap, _groundMap);
 
         var entityBackgroundTileMap = GameObject.Find(TileMapType.EntityMap_Background.Name()).GetComponent<Tilemap>();
-        entityMapBackground = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, groundMap);
+        _entityMapBackground = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, _groundMap);
 
-        actors = new List<Actor>();
+        _actors = new List<Actor>();
 
         // Build Player
-        player = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player");
-        player.gameObject.AddComponent<Player>().owner = player;
-        player.gameObject.AddComponent<Fighter>().Init(30, 2, 5).owner = player;
-        player.gameObject.AddComponent<Inventory>().Init(capacity: 10).owner = player;
-        actors.Add(new Actor(player));
+        _player = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player");
+        _player.gameObject.AddComponent<Player>().owner = _player;
+        _player.gameObject.AddComponent<Fighter>().Init(30, 2, 5).owner = _player;
+        _player.gameObject.AddComponent<Inventory>().Init(capacity: 10).owner = _player;
+        _actors.Add(new Actor(_player));
 
         SetDesiredScreenSize();
-        Camera.main.transform.position = new Vector3(player.position.x + CalculateCameraAdjustment(), player.position.y, Camera.main.transform.position.z);
+        Camera.main.transform.position = new Vector3(_player.position.x + CalculateCameraAdjustment(), _player.position.y, Camera.main.transform.position.z);
 
         // Build Enemies
-        var newEntities = levelBuilder.FillRoomsWithEntityActors(entityMap.GetEntities(), maxEnemiesInRoom, maxItemsInRoom);
+        var newEntities = levelBuilder.FillRoomsWithEntityActors(_entityMap.GetEntities(), maxEnemiesInRoom, maxItemsInRoom);
         foreach (var enemy in newEntities)
         {
-            actors.Add(new Actor(enemy));
-            entityMap.AddEntity(enemy);
+            _actors.Add(new Actor(enemy));
+            _entityMap.AddEntity(enemy);
         }
 
-        var passiveEntities = levelBuilder.FillRoomsWithPassiveEntities(entityMapBackground.GetEntities(), maxEnemiesInRoom, maxItemsInRoom);
-        foreach( var passiveEntity in passiveEntities ){
-            entityMapBackground.AddEntity(passiveEntity);
+        var passiveEntities = levelBuilder.FillRoomsWithPassiveEntities(_entityMapBackground.GetEntities(), maxEnemiesInRoom, maxItemsInRoom);
+        foreach (var passiveEntity in passiveEntities)
+        {
+            _entityMapBackground.AddEntity(passiveEntity);
         }
-        
 
-        entityMap.AddEntity(player);
+        _entityMap.AddEntity(_player);
 
         // Setup Systems
-        fovSystem = new FieldOfViewSystem(groundMap);
-        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
+        fovSystem = new FieldOfViewSystem(_groundMap);
+        fovSystem.Run(new Vector2Int(_player.position.x, _player.position.y), playerViewDistance);
 
         RunVisibilitySystem();
 
         // Final Setup
-        groundMap.UpdateTiles();
+        _groundMap.UpdateTiles();
 
-        statText.SetPlayer(player);
-        gameState = GameState.Turn_Player;
+        statText.SetPlayer(_player);
+        inventoryInterface.SetInventory(_player.GetComponent<Inventory>());
+        _gameState = GameState.Global_LevelScene;
 
-        log = FindObjectOfType<MessageLog>();
+        _log = FindObjectOfType<MessageLog>();
     }
 
     void Update()
@@ -113,8 +116,8 @@ public class GameManager : MonoBehaviour
     ActionResult ProcessTurn()
     {
         var actionResult = new ActionResult();
-        var actor = actors.ElementAt(currentActorId);
-        var action = actor.GetAction(entityMap, groundMap);
+        var actor = _actors.ElementAt(_currentActorId);
+        var action = actor.GetAction(_entityMap, _groundMap);
         var actionToTake = action;
         if (action == null) { return new ActionResult(); }
 
@@ -123,8 +126,8 @@ public class GameManager : MonoBehaviour
             actionResult = actionToTake.PerformAction();
 
             // Cleanup to handle after player potentially changes position
-            var adjustment = 
-            Camera.main.transform.position = new Vector3(player.position.x + CalculateCameraAdjustment(), player.position.y, Camera.main.transform.position.z);
+            var adjustment =
+            Camera.main.transform.position = new Vector3(_player.position.x + CalculateCameraAdjustment(), _player.position.y, Camera.main.transform.position.z);
 
             actionToTake = actionResult.nextAction;
         }
@@ -133,11 +136,11 @@ public class GameManager : MonoBehaviour
 
         if (actionResult.success)
         {
-            currentActorId = (currentActorId + 1) % actors.Count();
-            if (actor.entity == player)
+            _currentActorId = (_currentActorId + 1) % _actors.Count();
+            if (actor.entity == _player)
             {
-                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
-                groundMap.UpdateTiles();
+                fovSystem.Run(new Vector2Int(_player.position.x, _player.position.y), playerViewDistance);
+                _groundMap.UpdateTiles();
             }
         }
 
@@ -148,27 +151,27 @@ public class GameManager : MonoBehaviour
 
     void ProcessTurnResults(ActionResult results)
     {
-        foreach (var message in results.GetMessages()) { log.AddMessage(message); }
+        foreach (var message in results.GetMessages()) { _log.AddMessage(message); }
         var deadEntities = results.GetEntityEvent("dead");
         if (deadEntities.Count() > 0)
         {
             var actionResult = new ActionResult();
             foreach (var dead in deadEntities)
             {
-                if (dead == player)
+                if (dead == _player)
                 {
                     actionResult.Append(dead.ConvertToDeadPlayer());
-                    gameState = GameState.Global_PlayerDead;
+                    _gameState = GameState.Global_PlayerDead;
                 }
                 else
                 {
                     actionResult.Append(dead.ConvertToDeadMonster());
                 }
 
-                entityMap.SwapEntityToMap(dead, entityMapBackground);
-                actors.Remove(dead.actor);
+                _entityMap.SwapEntityToMap(dead, _entityMapBackground);
+                _actors.Remove(dead.actor);
             }
-            foreach (var message in actionResult.GetMessages()) { log.AddMessage(message); }
+            foreach (var message in actionResult.GetMessages()) { _log.AddMessage(message); }
         }
     }
 
@@ -179,14 +182,14 @@ public class GameManager : MonoBehaviour
 
     void RunVisibilitySystem()
     {
-        entityMapBackground.RenderAll();
-        entityMap.RenderAll();
+        _entityMapBackground.RenderAll();
+        _entityMap.RenderAll();
     }
 
     private void ReportObjectsAtPosition(CellPosition pos)
     {
-        var entityNames = entityMap.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
-        var backgroundNames = entityMapBackground.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
+        var entityNames = _entityMap.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
+        var backgroundNames = _entityMapBackground.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
 
         var entitiesToLog = entityNames.Concat(backgroundNames);
         var message = "There is nothing there.";
@@ -197,39 +200,68 @@ public class GameManager : MonoBehaviour
             message = $"You see: {names}";
         }
 
-        log.AddMessage(new Message(message, null));
+        _log.AddMessage(new Message(message, null));
     }
 
     void SetMoveDirection(Vector2Int direction)
     {
-        CellPosition newPosition = new CellPosition(player.position.x + direction.x, player.position.y + direction.y);
-        var action = new WalkAction(player.actor, entityMap, groundMap, newPosition);
-        player.actor.SetNextAction(action);
+        CellPosition newPosition = new CellPosition(_player.position.x + direction.x, _player.position.y + direction.y);
+        var action = new WalkAction(_player.actor, _entityMap, _groundMap, newPosition);
+        _player.actor.SetNextAction(action);
     }
 
     void HandleUserInput()
     {
-        // Look Action
-        if (Input.GetMouseButtonDown(0))
+        if (_gameState == GameState.Global_LevelScene)
         {
-            var mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            mPos.x += 0.5f;
-            mPos.y += 0.5f;
-            var tilePos = groundMap.map.WorldToCell(mPos);
-            ReportObjectsAtPosition(new CellPosition(tilePos));
+            // Look Action
+            if (Input.GetMouseButtonDown(0))
+            {
+                var mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                mPos.x += 0.5f;
+                mPos.y += 0.5f;
+                var tilePos = _groundMap.map.WorldToCell(mPos);
+                ReportObjectsAtPosition(new CellPosition(tilePos));
+            }
+
+            HandleMovementKeys();
+
+            if (Input.GetKeyDown(KeyCode.G))
+            {
+                // Pickup!
+                var action = new PickupItemAction(_player.actor, _entityMapBackground, _groundMap);
+                _player.actor.SetNextAction(action);
+            }
+
+            if (Input.GetKeyDown(KeyCode.I))
+            {
+                _tempGameState = _gameState;
+                _gameState = GameState.Global_InventoryMenu;
+
+                inventoryInterface.Show();
+
+                // Open inventory of player
+                _log.AddMessage(new Message($"{_player.actor.entity.GetColoredName()} opens their inventory...", null));
+                var result = inventoryInterface.DescribeInventory();
+                ProcessTurnResults(result);
+            }
         }
 
-        HandleMovementKeys();
-       
-       if( Input.GetKeyDown(KeyCode.G) ){
-           // Pickup!
-           var action = new PickupItemAction(player.actor, entityMapBackground, groundMap);
-           player.actor.SetNextAction(action);
-       }
+        else if (_gameState == GameState.Global_InventoryMenu)
+        {
+            if (Input.GetKeyDown(KeyCode.I))
+            { 
+                _gameState = _tempGameState;
+
+                inventoryInterface.Hide();   
+            }
+        }
+
     }
 
-    void HandleMovementKeys(){
-         Vector2Int direction = Vector2Int.zero;
+    void HandleMovementKeys()
+    {
+        Vector2Int direction = Vector2Int.zero;
         // Cardinals
         if (Input.GetKeyDown(KeyCode.Keypad4))
             direction.x = -1;
@@ -264,19 +296,21 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void SetDesiredScreenSize() {
+    void SetDesiredScreenSize()
+    {
         float aspect = (float)Screen.width / (float)Screen.height;
-        var totalWidth = 1f + (float) (viewportWidth * 2f / cameraAdjustmentPercent);
+        var totalWidth = 1f + (float)(viewportWidth * 2f / cameraAdjustmentPercent);
         var screenSize = (float)totalWidth / 2f / aspect;
 
         Camera.main.orthographicSize = screenSize;
     }
 
-    float CalculateCameraAdjustment(){
+    float CalculateCameraAdjustment()
+    {
         var value = 0f;
 
         float aspect = (float)Screen.width / (float)Screen.height;
-        var totalWidth = (float) viewportWidth * 2f / cameraAdjustmentPercent;
+        var totalWidth = (float)viewportWidth * 2f / cameraAdjustmentPercent;
         // var screenSize = totalWidth / 2 / aspect;
         value = totalWidth - (viewportWidth * 2f);
 
