@@ -11,7 +11,7 @@ public class InventoryItem : MonoBehaviour
     public TextMeshProUGUI text;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         image = GetComponentInChildren<Image>();
         text = GetComponentInChildren<TextMeshProUGUI>();

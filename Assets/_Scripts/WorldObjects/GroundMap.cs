@@ -70,7 +70,12 @@ public class GroundMap : ScriptableObject
 
     public bool isTileVisible(CellPosition pos)
     {
-        return tiles[pos.x, pos.y].isVisible;
+        if( isTileValid(pos.x,pos.y) ){
+            return tiles[pos.x, pos.y].isVisible;
+        }
+        else {
+            return false;
+        }
     }
     public bool isTileValid(int x, int y)
     {
