@@ -2,18 +2,18 @@ using System.Linq;
 
 public class PickupItemAction : Action
 {
-    public PickupItemAction(Actor actor, EntityMap eMap, GroundMap gMap) : base(actor, eMap, gMap)
+    public PickupItemAction(Actor actor) : base(actor)
     {
     }
 
-    public override ActionResult PerformAction()
+    public override ActionResult PerformAction(MapDTO mapData)
     {
         // validate components
         var inventoryComponent = actor.entity.gameObject.GetComponent<Inventory>();
 
         if (inventoryComponent != null)
         {
-            var targets = eMap.GetEntities(actor.entity.position).Where(e => e.gameObject.GetComponent<Item>() != null).Select(e => e.gameObject.GetComponent<Item>());
+            var targets = mapData.EntityFloorMap.GetEntities(actor.entity.position).Where(e => e.gameObject.GetComponent<Item>() != null).Select(e => e.gameObject.GetComponent<Item>());
             if (targets.Count() == 0)
             {
                 // Nothing there!
@@ -22,8 +22,8 @@ public class PickupItemAction : Action
             else
             {
                 var item = targets.FirstOrDefault();
-                var action = new AddItemToInventoryAction(actor, eMap, gMap, item);
-                result.nextAction = action;
+                var action = new AddItemToInventoryAction(actor, item);
+                result.NextAction = action;
             }
         }
         else

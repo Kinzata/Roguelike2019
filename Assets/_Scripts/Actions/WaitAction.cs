@@ -1,13 +1,13 @@
 public class WaitAction : Action
 {
-    public WaitAction(Actor actor, EntityMap eMap, GroundMap gMap) : base(actor, eMap, gMap)
+    public WaitAction(Actor actor) : base(actor)
     {
     }
 
-    public override ActionResult PerformAction()
+    public override ActionResult PerformAction(MapDTO mapData)
     {
         // Do Nothing
-        result.success = true;
+        result.Success = true;
 
         return result;
     }

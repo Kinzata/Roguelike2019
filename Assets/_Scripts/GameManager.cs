@@ -123,18 +123,24 @@ public class GameManager : MonoBehaviour
 
         do
         {
-            actionResult = actionToTake.PerformAction();
+            var mapData = new MapDTO{ EntityMap = _entityMap, EntityFloorMap = _entityMapBackground, GroundMap = _groundMap };
+            actionResult = actionToTake.PerformAction(mapData);
 
             // Cleanup to handle after player potentially changes position
             var adjustment =
             Camera.main.transform.position = new Vector3(_player.position.x + CalculateCameraAdjustment(), _player.position.y, Camera.main.transform.position.z);
 
-            actionToTake = actionResult.nextAction;
+            if( actionResult.Success ){
+                TransitionFrom(_gameState);
+                TransitionTo(actionResult.TransitionToStateOnSuccess);
+            }
+
+            actionToTake = actionResult.NextAction;
         }
-        while (actionResult.nextAction != null);
+        while (actionResult.NextAction != null);
 
 
-        if (actionResult.success)
+        if (actionResult.Success)
         {
             _currentActorId = (_currentActorId + 1) % _actors.Count();
             if (actor.entity == _player)
@@ -206,7 +212,7 @@ public class GameManager : MonoBehaviour
     void SetMoveDirection(Vector2Int direction)
     {
         CellPosition newPosition = new CellPosition(_player.position.x + direction.x, _player.position.y + direction.y);
-        var action = new WalkAction(_player.actor, _entityMap, _groundMap, newPosition);
+        var action = new WalkAction(_player.actor, newPosition);
         _player.actor.SetNextAction(action);
     }
 
@@ -229,16 +235,14 @@ public class GameManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.G))
             {
                 // Pickup!
-                var action = new PickupItemAction(_player.actor, _entityMapBackground, _groundMap);
+                var action = new PickupItemAction(_player.actor);
                 _player.actor.SetNextAction(action);
             }
 
             if (Input.GetKeyDown(KeyCode.I))
             {
-                _tempGameState = _gameState;
-                _gameState = GameState.Global_InventoryMenu;
-
-                inventoryInterface.Show();
+                TransitionFrom(_gameState);
+                TransitionTo(GameState.Global_InventoryMenu);
 
                 // Open inventory of player
                 _log.AddMessage(new Message($"{_player.actor.entity.GetColoredName()} opens their inventory...", null));
@@ -251,12 +255,29 @@ public class GameManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.I))
             { 
-                _gameState = _tempGameState;
-
-                inventoryInterface.Hide();   
+                TransitionFrom(_gameState);
+                TransitionTo(GameState.Global_LevelScene);
             }
         }
 
+    }
+
+    public void TransitionTo(GameState gameState) {
+        if( gameState == GameState.Global_LevelScene) {
+            _gameState = gameState;
+        }
+        else if( gameState == GameState.Global_InventoryMenu ){
+            _gameState = gameState;
+            inventoryInterface.Show();
+        }
+
+
+    }
+
+    public void TransitionFrom(GameState gameState){
+        if( gameState == GameState.Global_InventoryMenu ){
+            inventoryInterface.Hide();
+        }
     }
 
     void HandleMovementKeys()

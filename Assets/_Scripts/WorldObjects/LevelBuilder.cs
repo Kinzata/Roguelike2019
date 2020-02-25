@@ -229,7 +229,11 @@ public class LevelBuilder
         );
 
         if( isItem ){
-            entity.gameObject.AddComponent<Item>().owner = entity;
+            var item = entity.gameObject.AddComponent<Item>();
+            item.owner = entity;
+
+            // This is temp, will eventually be loaded from an item file or something
+            item.Operations.Add(new ModifyHealthOperation(new IntRange{min = 8, max = 12} ));
         }
 
         return entity;

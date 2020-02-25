@@ -1,14 +1,10 @@
 public abstract class Action
 {
     public Actor actor;
-    public EntityMap eMap;
-    public GroundMap gMap;
     protected ActionResult result;
 
-    public Action(Actor actor, EntityMap eMap, GroundMap gMap) {
+    public Action(Actor actor) {
         this.actor = actor;
-        this.eMap = eMap;
-        this.gMap = gMap;
         result = new ActionResult();
     }
 
@@ -16,5 +12,5 @@ public abstract class Action
         this.result = result;
     }
 
-    public abstract ActionResult PerformAction();
+    public abstract ActionResult PerformAction(MapDTO mapData);
 }

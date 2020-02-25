@@ -24,4 +24,12 @@ public class Inventory : EntityComponent
         result.AppendMessage(new Message($"{item.owner.GetColoredName()} added to {owner.GetColoredName()}'s inventory.", null));
         return result;
     }
+
+    public bool ConsumeItemUse(Item item){
+        var removed = heldItems.Remove(item);
+        
+        Destroy(item.gameObject);
+
+        return removed;
+    }
 }

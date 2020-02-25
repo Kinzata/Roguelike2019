@@ -4,12 +4,12 @@ public class AddItemToInventoryAction : Action
 {
     private Item item;
 
-    public AddItemToInventoryAction(Actor actor, EntityMap eMap, GroundMap gMap, Item item) : base(actor, eMap, gMap)
+    public AddItemToInventoryAction(Actor actor, Item item) : base(actor)
     {
         this.item = item;
     }
 
-    public override ActionResult PerformAction()
+    public override ActionResult PerformAction(MapDTO mapData)
     {
         // validate components
         var inventoryComponent = actor.entity.gameObject.GetComponent<Inventory>();
@@ -26,7 +26,7 @@ public class AddItemToInventoryAction : Action
                 var addItemResult = inventoryComponent.AddItem(item);
                 result.AppendMessage(new Message($"{actor.entity.GetColoredName()} picks up {item.owner.GetColoredName()}.", null));
                 result.Append(addItemResult);
-                result.success = true;
+                result.Success = true;
             }
             else {
                 // Inventory is full

@@ -9,6 +9,9 @@ public class InventoryInterface : MonoBehaviour
     private Inventory _inventory;
     public void SetInventory(Inventory inventory){ _inventory = inventory; }
 
+    public EntityMap entityMap;
+    public GroundMap groundMap;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,7 +39,16 @@ public class InventoryInterface : MonoBehaviour
              result.AppendMessage(new Message(item.ToString(), null));
         }
 
-        result.success = false;
+        result.Success = false;
         return result;
+    }
+
+    public void UseItem(InventoryItem item){
+        _inventory.owner.actor.SetNextAction( new TriggerOperationsAction(_inventory.owner.actor, item.GetItem().owner ));
+
+        // TODO: Create list of actions, action.  One for triggering the operations, one for consuming an item use, one for removing item from inventory, etc...
+        // Remove item from inventory UI if fully consumed
+        var fullyConsumed = _inventory.ConsumeItemUse(item.GetItem());
+        if( fullyConsumed ) { item.Set(null); }
     }
 }

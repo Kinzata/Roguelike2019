@@ -5,8 +5,9 @@ public class ActionResult
 {
     private List<Message> messages;
     private List<KeyValuePair<string, Entity>> entityEvents;
-    public bool success = false;
-    public Action nextAction;
+    public bool Success = false;
+    public GameState TransitionToStateOnSuccess = GameState.Unspecified;
+    public Action NextAction;
 
 
     public ActionResult()

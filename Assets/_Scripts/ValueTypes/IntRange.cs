@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class IntRange : ScriptableObject{
+public class IntRange : ScriptableObject {
     public int min;
     public int max;
 

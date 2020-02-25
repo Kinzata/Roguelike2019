@@ -6,25 +6,25 @@ public class WalkAction : Action
 
     private CellPosition targetPos;
 
-    public WalkAction(Actor actor, EntityMap eMap, GroundMap gMap, CellPosition targetPosition) : base(actor, eMap, gMap)
+    public WalkAction(Actor actor, CellPosition targetPosition) : base(actor)
     {
         this.targetPos = targetPosition;
     }
 
-    public override ActionResult PerformAction()
+    public override ActionResult PerformAction(MapDTO mapData)
     {
         var result = new ActionResult();
 
-        var isMoveSuccess = MoveTorwards(targetPos, eMap, gMap);
+        var isMoveSuccess = MoveTorwards(targetPos, mapData.EntityMap, mapData.GroundMap);
         if (isMoveSuccess)
         {
-            result.success = true;
+            result.Success = true;
         }
         else
         {
             // Ok, why can't we move?
             // Is it a wall?
-            var worldTile = gMap.GetTileAt(targetPos);
+            var worldTile = mapData.GroundMap.GetTileAt(targetPos);
             if (worldTile != null)
             {
                 // is it blocked?
@@ -36,12 +36,12 @@ public class WalkAction : Action
             }
 
             // Does an entity exist?
-            if (eMap.GetEntities(targetPos).Any())
+            if (mapData.EntityMap.GetEntities(targetPos).Any())
             {
-                result.nextAction = new MeleeAttackAction(actor, eMap, gMap, targetPos);
+                result.NextAction = new MeleeAttackAction(actor, targetPos);
             }
 
-            result.success = false;
+            result.Success = false;
         }
 
         return result;

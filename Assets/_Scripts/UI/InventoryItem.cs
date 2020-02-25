@@ -28,4 +28,8 @@ public class InventoryItem : MonoBehaviour
         image.color = item.owner.color;
         text.SetText(item.owner.GetColoredName());
     }
+
+    public Item GetItem(){
+        return _item;
+    }
 }
