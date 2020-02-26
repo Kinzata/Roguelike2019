@@ -111,12 +111,18 @@ public class Entity : MonoBehaviour
         return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name.ToPronoun()}</color>";
     }
 
-    // Temp for the player during refactor to command pattern
-    public CellPosition Move(int dx, int dy)
+    public CellPosition SetPosition(int x, int y)
     {
-        actor.entity.position.x += dx;
-        actor.entity.position.y += dy;
+        position.x = x;
+        position.y = y;
 
-        return actor.entity.position;
+        transform.position = position.ToVector3Int();
+
+        return position;
+    }
+
+    public CellPosition SetPosition(CellPosition cell)
+    {
+        return SetPosition(cell.x, cell.y);
     }
 }

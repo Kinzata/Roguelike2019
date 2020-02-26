@@ -12,11 +12,19 @@ public class InventoryInterface : MonoBehaviour
     public EntityMap entityMap;
     public GroundMap groundMap;
 
+    public bool isUse = true;
+    public bool isDrop = false;
+
     // Start is called before the first frame update
     void Start()
     {
         canvas = gameObject.GetComponent<Canvas>();
         gameObject.SetActive(false);
+    }
+
+    void Update() {
+        if (Input.GetKeyDown(KeyCode.D)) { isDrop = true; isUse = false;}
+        if (Input.GetKeyDown(KeyCode.U)) { isDrop = false; isUse = true;}
     }
 
     public void Show() {
@@ -32,6 +40,9 @@ public class InventoryInterface : MonoBehaviour
                 itemSlots[i].SetToDefault();
             }
         }
+
+        isUse = true;
+        isDrop = false;
     }
 
     public void Hide() {
@@ -52,6 +63,11 @@ public class InventoryInterface : MonoBehaviour
     }
 
     public void UseItem(InventoryItem item){
-        _inventory.owner.actor.SetNextAction( new TriggerOperationsAction(_inventory.owner.actor, item.GetItem().owner ));
+        if( isUse ){
+            _inventory.owner.actor.SetNextAction( new TriggerOperationsAction(_inventory.owner.actor, item.GetItem().owner ));
+        }
+        else if( isDrop ){
+            _inventory.owner.actor.SetNextAction( new DropItemAction(_inventory.owner.actor, item.GetItem()));
+        }
     }
 }

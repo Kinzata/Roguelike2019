@@ -1,0 +1,32 @@
+using System.Linq;
+
+public class DropItemAction : Action
+{
+    private Item _item;
+
+    public DropItemAction(Actor actor, Item item) : base(actor)
+    {
+        _item = item;
+    }
+
+    public override ActionResult PerformAction(MapDTO mapData)
+    {
+        // validate components
+        var inventoryComponent = actor.entity.gameObject.GetComponent<Inventory>();
+
+        if (inventoryComponent != null)
+        {
+            _item.owner.gameObject.SetActive(true);
+            _item.owner.SetPosition(actor.entity.position.Clone());
+
+            inventoryComponent.RemoveItem(_item);
+
+            result.AppendMessage(new Message($"{actor.entity.GetColoredName()} drops {_item.owner.GetColoredName()}.", null));
+            result.Success = true;
+        }
+
+        result.TransitionToStateOnSuccess = GameState.Global_LevelScene;
+        
+        return result;
+    }
+}
