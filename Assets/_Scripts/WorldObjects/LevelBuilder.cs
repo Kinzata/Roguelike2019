@@ -233,7 +233,10 @@ public class LevelBuilder
             item.owner = entity;
 
             // This is temp, will eventually be loaded from an item file or something
-            item.Operations.Add(new ModifyHealthOperation(new IntRange{min = 8, max = 12} ));
+            item.Operations.Add(
+                new ModifyHealthOperation(
+                    ScriptableObject.CreateInstance<IntRange>().Init(8, 12)
+                ));
         }
 
         return entity;
