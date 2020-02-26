@@ -16,9 +16,7 @@ public class InventoryItem : MonoBehaviour
         image = GetComponentInChildren<Image>();
         text = GetComponentInChildren<TextMeshProUGUI>();
 
-        // Defaults
-        image.color = new Color(1,1,1,0);
-        text.SetText("");
+        SetToDefault();
     }
 
     public void Set(Item item){
@@ -27,6 +25,11 @@ public class InventoryItem : MonoBehaviour
         image.sprite = item.owner.sprite;
         image.color = item.owner.color;
         text.SetText(item.owner.GetColoredName());
+    }
+
+    public void SetToDefault(){
+        image.color = new Color(1,1,1,0);
+        text.SetText("");
     }
 
     public Item GetItem(){

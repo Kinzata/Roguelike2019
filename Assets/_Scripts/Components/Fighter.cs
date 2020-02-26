@@ -18,9 +18,29 @@ public class Fighter : EntityComponent
     }
 
     public ActionResult TakeDamage(int amount){
+        if(amount > 0 ){
+            amount = -amount;
+        }
+
+        return ModifyHealth(amount);
+    }
+
+    public ActionResult Heal(int amount){
+        if(amount < 0) {
+            amount = -amount;
+        }
+
+        return ModifyHealth(amount);
+    }
+
+    private ActionResult ModifyHealth(int amount){
         var actionResult = new ActionResult();
 
-        hp -= amount;
+        hp += amount;
+
+        if( hp > maxHp ){
+            hp = maxHp;
+        }
 
         if( hp <= 0 ){
             actionResult.AppendEntityEvent("dead", owner);

@@ -26,12 +26,13 @@ public class ModifyHealthOperation : Operation
         }
 
         var modifierAmount = ModifierRange.RandomValue();
-        requiredComponent.hp += modifierAmount;
 
         if( modifierAmount >= 0 ) {
+            requiredComponent.Heal(modifierAmount);
             result.AppendMessage(new Message($"{entity.GetColoredName()} was healed for {modifierAmount}!", null));
         }
         else {
+            requiredComponent.TakeDamage(modifierAmount);
             result.AppendMessage(new Message($"{entity.GetColoredName()} was hurt for {modifierAmount}!", null));
         }
 

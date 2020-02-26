@@ -25,10 +25,8 @@ public class Inventory : EntityComponent
         return result;
     }
 
-    public bool ConsumeItemUse(Item item){
+    public bool RemoveItem(Item item){
         var removed = heldItems.Remove(item);
-        
-        Destroy(item.gameObject);
 
         return removed;
     }
