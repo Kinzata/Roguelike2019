@@ -8,7 +8,7 @@ public class SpriteLoader : MonoBehaviour
 
     private int[] floor_grass_sprites = { 1, 2, 4, 6 };
 
-    void Start()
+    void Awake()
     {
         if (instance == null)
         {
@@ -50,6 +50,8 @@ public class SpriteLoader : MonoBehaviour
                 return spriteSheet[815];
             case SpriteType.Item_Potion_Empty:
                 return spriteSheet[847];
+            case SpriteType.Item_Scroll_One:
+                return spriteSheet[881];
             default:
                 throw new System.Exception("Bad sprite sheet enum type.");
         }

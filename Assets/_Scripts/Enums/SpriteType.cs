@@ -9,5 +9,6 @@ public enum SpriteType{
     Remains_Skull,
     Remains_Bones,
     Item_Potion_Full,
-    Item_Potion_Empty
+    Item_Potion_Empty,
+    Item_Scroll_One
 }

@@ -55,6 +55,10 @@ public class Entity : MonoBehaviour
         }
     }
 
+    public bool isVisible(){
+        return spriteRenderer.enabled;
+    }
+
     public int DistanceTo(Entity other)
     {
         var dx = other.position.x - position.x;

@@ -18,7 +18,7 @@ public class ActionResult
 
     public void Append(ActionResult result)
     {
-        messages.AddRange(result.GetMessages());
+        AppendMessages(result.GetMessages());
         foreach (var key in result.GetEntityEventKeys())
         {
             entityEvents.AddRange(result.GetEntityEvent(key).Select(e => new KeyValuePair<string, Entity>(key, e)));
@@ -28,6 +28,10 @@ public class ActionResult
     public void AppendMessage(Message message)
     {
         messages.Add(message);
+    }
+
+    public void AppendMessages(List<Message> appendMessages){
+        messages.AddRange(appendMessages);
     }
 
     public List<Message> GetMessages()

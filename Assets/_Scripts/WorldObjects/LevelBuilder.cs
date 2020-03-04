@@ -206,19 +206,26 @@ public class LevelBuilder
 
     private Entity GenerateItem(CellPosition position)
     {
+
+        if (Random.value <= 0.5f)
+        {
+            return GeneratePotion(position);
+        }
+        else {
+            return GenerateLightningScroll(position);
+        }
+
+    }
+
+    private Entity GeneratePotion(CellPosition position)
+    {
         SpriteType spriteType;
         Color color;
         string name;
-        bool isItem = false;
 
-        // if (Random.value <= 1f)
-        // {
-        // Generate Potion
         spriteType = SpriteType.Item_Potion_Full;
         color = new Color32(63, 191, 191, 255);
         name = "potion";
-        isItem = true;
-        // }
 
         var entity = Entity.CreateEntity().Init(
             position,
@@ -228,18 +235,54 @@ public class LevelBuilder
             name: name
         );
 
-        if( isItem ){
-            var item = entity.gameObject.AddComponent<Item>();
-            item.owner = entity;
+        var item = entity.gameObject.AddComponent<Item>();
+        item.owner = entity;
 
-            // This is temp, will eventually be loaded from an item file or something
-            item.Operations.Add(
-                new ModifyHealthOperation(
-                    ScriptableObject.CreateInstance<IntRange>().Init(8, 12)
-                ));
-        }
+        // This is temp, will eventually be loaded from an item file or something
+        item.Operations.Add(
+            new ModifyHealthOperation(
+                ScriptableObject.CreateInstance<IntRange>().Init(8, 12)
+            ));
+
 
         return entity;
+
+    }
+
+    private Entity GenerateLightningScroll(CellPosition position)
+    {
+        SpriteType spriteType;
+        Color color;
+        string name;
+
+        spriteType = SpriteType.Item_Scroll_One;
+        color = new Color32(196, 250, 255, 255);
+        name = "lightning scroll";
+
+        var entity = Entity.CreateEntity().Init(
+            position,
+            spriteType,
+            color,
+            blocks: false,
+            name: name
+        );
+
+        var item = entity.gameObject.AddComponent<Item>();
+        item.owner = entity;
+
+        // This is temp, will eventually be loaded from an item file or something
+        item.Operations.Add(
+            new ReTargetClosestActorOperation()
+        );
+
+        item.Operations.Add(
+            new ModifyHealthOperation(
+                ScriptableObject.CreateInstance<IntRange>().Init(-10, -16)
+            ));
+
+
+        return entity;
+
     }
 
 }

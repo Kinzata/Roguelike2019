@@ -8,15 +8,16 @@ public class ModifyHealthOperation : Operation
         ModifierRange = range;
     }
 
-    public override ActionResult Occur(Entity entity, MapDTO mapData, Entity target = null, CellPosition targetPosition = null)
+    public override OperationResult Occur(Entity entity, MapDTO mapData, Entity target = null, CellPosition targetPosition = null)
     {
         // Target and target position could be used for things like throwing something that modifies health.
 
         // Base entity, just affect that entity
         var scriptTarget = entity;
+        if( target != null ){ scriptTarget = target; }
 
         var requiredComponent = scriptTarget.gameObject.GetComponent<Fighter>();
-        var result = new ActionResult();
+        var result = new OperationResult();
         result.Success = false;
 
         // Validity check
@@ -28,12 +29,12 @@ public class ModifyHealthOperation : Operation
         var modifierAmount = ModifierRange.RandomValue();
 
         if( modifierAmount >= 0 ) {
-            requiredComponent.Heal(modifierAmount);
-            result.AppendMessage(new Message($"{entity.GetColoredName()} was healed for {modifierAmount}!", null));
+            result.ActionResult = requiredComponent.Heal(modifierAmount);
+            result.AppendMessage(new Message($"{scriptTarget.GetColoredName()} was healed for {modifierAmount}!", null));
         }
         else {
-            requiredComponent.TakeDamage(modifierAmount);
-            result.AppendMessage(new Message($"{entity.GetColoredName()} was hurt for {modifierAmount}!", null));
+            result.ActionResult = requiredComponent.TakeDamage(modifierAmount);
+            result.AppendMessage(new Message($"{scriptTarget.GetColoredName()} was hurt for {modifierAmount}!", null));
         }
 
         return result;
