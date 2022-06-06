@@ -1,5 +1,3 @@
-
-
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,22 +5,82 @@ using UnityEngine.Tilemaps;
 
 public class LevelBuilder
 {
-    public GroundMap map;
+    public GroundMap groundMap;
+    public EntityMap entityMap;
+    public EntityMap passiveEntityMap;
+    public List<Actor> actors;
 
-    public GroundMap MakeMap(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight, Tilemap tileMap)
+    public void Generate(LevelDataScriptableObject data)
     {
-        map = ScriptableObject.CreateInstance<GroundMap>().Init(mapWidth, mapHeight, tileMap);
+        actors = new List<Actor>();
 
-        var rooms = MakeRooms(maxRooms, roomSizeRange, mapWidth, mapHeight, tileMap);
-        map.rooms = rooms.ToList();
-        map.UpdateNavigationMasks();
+        MakeMap(data.maxRooms, data.roomSizeRange, data.mapWidth, data.mapHeight);
+
+        var entityTileMap = GameObject.Find(TileMapType.EntityMap.Name()).GetComponent<Tilemap>();
+        entityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityTileMap, groundMap);
+
+        MakeEntities(data.maxEnemiesInRoom, entityMap);
+
+        var entityBackgroundTileMap = GameObject.Find(TileMapType.EntityMap_Background.Name()).GetComponent<Tilemap>();
+        passiveEntityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, groundMap);
+
+        MakePassiveEntities(data.maxItemsInRoom, passiveEntityMap);
+    }
+
+    public void MakeMap(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight)
+    {
+        var groundTileMap = GameObject.Find(TileMapType.GroundMap.Name()).GetComponent<Tilemap>();
+        groundMap = ScriptableObject.CreateInstance<GroundMap>().Init(mapWidth, mapHeight, groundTileMap);
+
+        var rooms = MakeRooms(maxRooms, roomSizeRange, mapWidth, mapHeight, groundTileMap);
+        groundMap.rooms = rooms.ToList();
+        groundMap.UpdateNavigationMasks();
         Debug.Log("Rooms: " + rooms.Count());
-        return map;
+    }
+
+    public void MakeEntities(int maxEnemiesInRoom, EntityMap entityMap)
+    {
+        // Build Enemies
+        var newEntities = FillRoomsWithEntityActors(maxEnemiesInRoom);
+        foreach (var enemy in newEntities)
+        {
+            actors.Add(new Actor(enemy));
+            entityMap.AddEntity(enemy);
+        }
+    }
+
+    public void MakePassiveEntities(int maxItemsPerRoom, EntityMap passiveEntityMap)
+    {
+        var passiveEntities = FillRoomsWithPassiveEntities(maxItemsPerRoom);
+        foreach (var passiveEntity in passiveEntities)
+        {
+            passiveEntityMap.AddEntity(passiveEntity);
+        }
+    }
+
+    public GroundMap GetGroundMap()
+    {
+        return groundMap;
+    }
+
+    public EntityMap GetEntityMap()
+    {
+        return entityMap;
+    }
+
+    public EntityMap GetPassiveEntityMap()
+    {
+        return passiveEntityMap;
+    }
+
+    public List<Actor> GetActors()
+    {
+        return actors;
     }
 
     public CellPosition GetStartPosition()
     {
-        return map.rooms.First().center;
+        return groundMap.rooms.First().center;
     }
 
     private IList<Room> MakeRooms(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight, Tilemap tileMap)
@@ -40,7 +98,7 @@ public class LevelBuilder
             var y = Random.Range(0, mapHeight - height - 1);
 
             var rect = new Rect(x, y, width, height);
-            var newRoom = new Room(rect, map);
+            var newRoom = new Room(rect, groundMap);
 
             var intersectedRoom = rooms.Where(room =>
             {
@@ -75,7 +133,7 @@ public class LevelBuilder
 
     private Room CreateRoom(Rect rect)
     {
-        return new Room(rect, map).BuildRoom();
+        return new Room(rect, groundMap).BuildRoom();
     }
 
     private void CreateHorizontalTunnel(int x1, int x2, int y)
@@ -84,7 +142,7 @@ public class LevelBuilder
         int max = Mathf.Max(x1, x2);
         for (int x = min; x <= max; x++)
         {
-            map.SetTileToFloor(x, y);
+            groundMap.SetTileToFloor(x, y);
         }
     }
 
@@ -94,14 +152,16 @@ public class LevelBuilder
         int max = Mathf.Max(y1, y2);
         for (int y = min; y <= max; y++)
         {
-            map.SetTileToFloor(x, y);
+            groundMap.SetTileToFloor(x, y);
         }
     }
 
-    public IList<Entity> FillRoomsWithEntityActors(IList<Entity> entities, int maxMonstersPerRoom, int maxItemsPerRoom)
+
+
+    public IList<Entity> FillRoomsWithEntityActors(int maxMonstersPerRoom)
     {
         IList<Entity> newEntities = new List<Entity>();
-        foreach (Room room in map.rooms)
+        foreach (Room room in groundMap.rooms)
         {
             newEntities = FillRoomWithEnemies(newEntities, room, maxMonstersPerRoom);
         }
@@ -109,10 +169,10 @@ public class LevelBuilder
         return newEntities;
     }
 
-    public IList<Entity> FillRoomsWithPassiveEntities(IList<Entity> entities, int maxMonstersPerRoom, int maxItemsPerRoom)
+    public IList<Entity> FillRoomsWithPassiveEntities(int maxItemsPerRoom)
     {
         IList<Entity> newEntities = new List<Entity>();
-        foreach (Room room in map.rooms)
+        foreach (Room room in groundMap.rooms)
         {
             newEntities = FillRoomWithItems(newEntities, room, maxItemsPerRoom);
         }

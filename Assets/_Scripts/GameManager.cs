@@ -21,13 +21,7 @@ public class GameManager : MonoBehaviour
     [Header("Floor")]
     private GroundMap _groundMap;
 
-    [Header("World Properties")]
-    public int mapWidth = 80;
-    public int mapHeight = 60;
-    public IntRange roomSizeRange;
-    public int maxRooms = 30;
-    public int maxEnemiesInRoom = 3;
-    public int maxItemsInRoom = 2;
+    public LevelDataScriptableObject levelData;
 
     [Header("Systems")]
     private FieldOfViewSystem fovSystem;
@@ -41,51 +35,27 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        roomSizeRange = IntRange.CreateInstance<IntRange>();
-        roomSizeRange.min = 6;
-        roomSizeRange.max = 15;
-
         Application.targetFrameRate = 120;
         QualitySettings.vSyncCount = 0;
 
-        var groundTileMap = GameObject.Find(TileMapType.GroundMap.Name()).GetComponent<Tilemap>();
         var levelBuilder = new LevelBuilder();
-        _groundMap = levelBuilder.MakeMap(maxRooms, roomSizeRange, mapWidth, mapHeight, groundTileMap);
+        levelBuilder.Generate(levelData);
+        _groundMap = levelBuilder.GetGroundMap();
+        _entityMap = levelBuilder.GetEntityMap();
+        _entityMapBackground = levelBuilder.GetPassiveEntityMap();
+        _actors = levelBuilder.GetActors();
+
         var startLocation = levelBuilder.GetStartPosition();
-
-        var entityTileMap = GameObject.Find(TileMapType.EntityMap.Name()).GetComponent<Tilemap>();
-        _entityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityTileMap, _groundMap);
-
-        var entityBackgroundTileMap = GameObject.Find(TileMapType.EntityMap_Background.Name()).GetComponent<Tilemap>();
-        _entityMapBackground = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, _groundMap);
-
-        _actors = new List<Actor>();
-
         // Build Player
         _player = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player");
         _player.gameObject.AddComponent<Player>().owner = _player;
         _player.gameObject.AddComponent<Fighter>().Init(30, 2, 5).owner = _player;
         _player.gameObject.AddComponent<Inventory>().Init(capacity: 10).owner = _player;
         _actors.Add(new Actor(_player));
+        _entityMap.AddEntity(_player);
 
         SetDesiredScreenSize();
         Camera.main.transform.position = new Vector3(_player.position.x + CalculateCameraAdjustment(), _player.position.y, Camera.main.transform.position.z);
-
-        // Build Enemies
-        var newEntities = levelBuilder.FillRoomsWithEntityActors(_entityMap.GetEntities(), maxEnemiesInRoom, maxItemsInRoom);
-        foreach (var enemy in newEntities)
-        {
-            _actors.Add(new Actor(enemy));
-            _entityMap.AddEntity(enemy);
-        }
-
-        var passiveEntities = levelBuilder.FillRoomsWithPassiveEntities(_entityMapBackground.GetEntities(), maxEnemiesInRoom, maxItemsInRoom);
-        foreach (var passiveEntity in passiveEntities)
-        {
-            _entityMapBackground.AddEntity(passiveEntity);
-        }
-
-        _entityMap.AddEntity(_player);
 
         // Setup Systems
         fovSystem = new FieldOfViewSystem(_groundMap);

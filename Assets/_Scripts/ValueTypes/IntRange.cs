@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "IntRange", menuName = "ScriptableObjects/IntRange", order = 2)]
 public class IntRange : ScriptableObject {
     public int min;
     public int max;
