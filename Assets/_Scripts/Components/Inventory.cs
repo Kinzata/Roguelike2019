@@ -30,4 +30,16 @@ public class Inventory : EntityComponent
 
         return removed;
     }
+
+    public Item GetItem(int index)
+    {
+        if( heldItems.Count > index)
+        {
+            return heldItems[index];
+        }
+        else
+        {
+            return null;
+        }
+    }
 }

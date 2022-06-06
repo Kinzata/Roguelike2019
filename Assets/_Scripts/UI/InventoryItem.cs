@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,12 +6,14 @@ public class InventoryItem : MonoBehaviour
 {
     private Item _item;
     public Image image;
+    public Button button;
     public TextMeshProUGUI text;
 
     // Start is called before the first frame update
     void Awake()
     {
         image = GetComponentInChildren<Image>();
+        button = GetComponentInChildren<Button>();
         text = GetComponentInChildren<TextMeshProUGUI>();
 
         SetToDefault();
