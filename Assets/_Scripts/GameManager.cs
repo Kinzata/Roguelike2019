@@ -202,6 +202,12 @@ public class GameManager : MonoBehaviour
 
             HandleMovementKeys();
 
+            if (Input.GetKeyDown(KeyCode.Keypad5))
+            {
+                var action = new WaitAction(_player.actor);
+                _player.actor.SetNextAction(action);
+            }
+
             if (Input.GetKeyDown(KeyCode.G))
             {
                 // Pickup!

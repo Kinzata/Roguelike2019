@@ -10,6 +10,7 @@ public class LevelDataScriptableObject : ScriptableObject
     public int mapHeight = 60;
     public IntRange roomSizeRange;
     public int maxRooms = 30;
+    public int minEnemiesInRoom = 3;
     public int maxEnemiesInRoom = 3;
     public int maxItemsInRoom = 2;
 

@@ -41,7 +41,7 @@ public class LevelBuilder
     public void MakeEntities(LevelDataScriptableObject data, EntityMap entityMap)
     {
         // Build Enemies
-        var newEntities = FillRoomsWithEntityActors(data.maxEnemiesInRoom);
+        var newEntities = FillRoomsWithEntityActors(data);
         foreach (var enemy in newEntities)
         {
             actors.Add(new Actor(enemy));
@@ -158,12 +158,12 @@ public class LevelBuilder
 
 
 
-    public IList<Entity> FillRoomsWithEntityActors(int maxMonstersPerRoom)
+    public IList<Entity> FillRoomsWithEntityActors(LevelDataScriptableObject data)
     {
         IList<Entity> newEntities = new List<Entity>();
         foreach (Room room in groundMap.rooms)
         {
-            newEntities = FillRoomWithEnemies(newEntities, room, maxMonstersPerRoom);
+            newEntities = FillRoomWithEnemies(newEntities, room, data);
         }
 
         return newEntities;
@@ -180,9 +180,9 @@ public class LevelBuilder
         return newEntities;
     }
 
-    private IList<Entity> FillRoomWithEnemies(IList<Entity> entities, Room room, int maxMonsters)
+    private IList<Entity> FillRoomWithEnemies(IList<Entity> entities, Room room, LevelDataScriptableObject data)
     {
-        var numMonsters = Random.Range(0, maxMonsters + 1);
+        var numMonsters = Random.Range(data.minEnemiesInRoom, data.maxEnemiesInRoom + 1);
 
         foreach (int i in 0.To(numMonsters))
         {
