@@ -258,6 +258,10 @@ public class GameManager : MonoBehaviour
                 TransitionFrom(_gameState);
                 TransitionTo(GameState.Global_LevelScene);
             }
+            else
+            {
+                inventoryInterface.HandleItemKeyPress();
+            }
         }
 
     }
