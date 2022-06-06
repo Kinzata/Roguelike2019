@@ -14,34 +14,34 @@ public class LevelBuilder
     {
         actors = new List<Actor>();
 
-        MakeMap(data.maxRooms, data.roomSizeRange, data.mapWidth, data.mapHeight);
+        MakeMap(data);
 
         var entityTileMap = GameObject.Find(TileMapType.EntityMap.Name()).GetComponent<Tilemap>();
         entityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityTileMap, groundMap);
 
-        MakeEntities(data.maxEnemiesInRoom, entityMap);
+        MakeEntities(data, entityMap);
 
         var entityBackgroundTileMap = GameObject.Find(TileMapType.EntityMap_Background.Name()).GetComponent<Tilemap>();
         passiveEntityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, groundMap);
 
-        MakePassiveEntities(data.maxItemsInRoom, passiveEntityMap);
+        MakePassiveEntities(data, passiveEntityMap);
     }
 
-    public void MakeMap(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight)
+    public void MakeMap(LevelDataScriptableObject data)
     {
         var groundTileMap = GameObject.Find(TileMapType.GroundMap.Name()).GetComponent<Tilemap>();
-        groundMap = ScriptableObject.CreateInstance<GroundMap>().Init(mapWidth, mapHeight, groundTileMap);
+        groundMap = ScriptableObject.CreateInstance<GroundMap>().Init(data.mapWidth, data.mapHeight, groundTileMap);
 
-        var rooms = MakeRooms(maxRooms, roomSizeRange, mapWidth, mapHeight, groundTileMap);
+        var rooms = MakeRooms(data.maxRooms, data.roomSizeRange, data.mapWidth, data.mapHeight, groundTileMap);
         groundMap.rooms = rooms.ToList();
         groundMap.UpdateNavigationMasks();
         Debug.Log("Rooms: " + rooms.Count());
     }
 
-    public void MakeEntities(int maxEnemiesInRoom, EntityMap entityMap)
+    public void MakeEntities(LevelDataScriptableObject data, EntityMap entityMap)
     {
         // Build Enemies
-        var newEntities = FillRoomsWithEntityActors(maxEnemiesInRoom);
+        var newEntities = FillRoomsWithEntityActors(data.maxEnemiesInRoom);
         foreach (var enemy in newEntities)
         {
             actors.Add(new Actor(enemy));
@@ -49,9 +49,9 @@ public class LevelBuilder
         }
     }
 
-    public void MakePassiveEntities(int maxItemsPerRoom, EntityMap passiveEntityMap)
+    public void MakePassiveEntities(LevelDataScriptableObject data, EntityMap passiveEntityMap)
     {
-        var passiveEntities = FillRoomsWithPassiveEntities(maxItemsPerRoom);
+        var passiveEntities = FillRoomsWithPassiveEntities(data);
         foreach (var passiveEntity in passiveEntities)
         {
             passiveEntityMap.AddEntity(passiveEntity);
@@ -169,12 +169,12 @@ public class LevelBuilder
         return newEntities;
     }
 
-    public IList<Entity> FillRoomsWithPassiveEntities(int maxItemsPerRoom)
+    public IList<Entity> FillRoomsWithPassiveEntities(LevelDataScriptableObject data)
     {
         IList<Entity> newEntities = new List<Entity>();
         foreach (Room room in groundMap.rooms)
         {
-            newEntities = FillRoomWithItems(newEntities, room, maxItemsPerRoom);
+            newEntities = FillRoomWithItems(newEntities, room, data);
         }
 
         return newEntities;
@@ -241,23 +241,45 @@ public class LevelBuilder
         return entity;
     }
 
-    private IList<Entity> FillRoomWithItems(IList<Entity> entities, Room room, int maxItems)
+    private IList<Entity> FillRoomWithItems(IList<Entity> entities, Room room, LevelDataScriptableObject data)
     {
-        var numMonsters = Random.Range(0, maxItems + 1);
+        var numItems = Random.Range(0, data.maxItemsInRoom + 1);
 
-        foreach (int i in 0.To(numMonsters))
+        if( data.GuaranteeItems.Count != 0)
         {
-            var position = room.GetRandomLocation();
-
-            var entityExistsAtPosition = entities
-                                            .Where(e => e.position.x == position.x && e.position.y == position.y)
-                                            .Select(e => e)
-                                            .Any();
-
-            if (!entityExistsAtPosition)
+            numItems = data.GuaranteeItems.Count;
+            foreach (int i in 0.To(numItems))
             {
-                var entity = GenerateItem(position);
-                entities.Add(entity);
+                var position = room.GetRandomLocation();
+
+                var entityExistsAtPosition = entities
+                                                .Where(e => e.position.x == position.x && e.position.y == position.y)
+                                                .Select(e => e)
+                                                .Any();
+
+                if (!entityExistsAtPosition)
+                {
+                    var entity = GenerateItem(position, data.GuaranteeItems[i]);
+                    entities.Add(entity);
+                }
+            }
+        }
+        else
+        {
+            foreach (int i in 0.To(numItems))
+            {
+                var position = room.GetRandomLocation();
+
+                var entityExistsAtPosition = entities
+                                                .Where(e => e.position.x == position.x && e.position.y == position.y)
+                                                .Select(e => e)
+                                                .Any();
+
+                if (!entityExistsAtPosition)
+                {
+                    var entity = GenerateItem(position);
+                    entities.Add(entity);
+                }
             }
         }
 
@@ -266,15 +288,26 @@ public class LevelBuilder
 
     private Entity GenerateItem(CellPosition position)
     {
-
         if (Random.value <= 0.5f)
         {
-            return GeneratePotion(position);
+            return GenerateItem(position, "Potion");
         }
         else {
-            return GenerateLightningScroll(position);
+            return GenerateItem(position, "LightningScroll");
         }
+    }
 
+    private Entity GenerateItem(CellPosition position, string name)
+    {
+        switch( name)
+        {
+            case "Potion":
+                return GeneratePotion(position);
+            case "LightningScroll":
+                return GenerateLightningScroll(position);
+            default:
+                return GeneratePotion(position);
+        }
     }
 
     private Entity GeneratePotion(CellPosition position)

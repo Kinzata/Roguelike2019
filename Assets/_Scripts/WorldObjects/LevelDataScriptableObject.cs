@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 
 [CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/LevelData", order = 1)]
@@ -11,4 +12,7 @@ public class LevelDataScriptableObject : ScriptableObject
     public int maxRooms = 30;
     public int maxEnemiesInRoom = 3;
     public int maxItemsInRoom = 2;
+
+    [Header("ItemOverrides")]
+    public List<string> GuaranteeItems;
 }

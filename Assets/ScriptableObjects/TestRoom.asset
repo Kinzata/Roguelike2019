@@ -16,5 +16,8 @@ MonoBehaviour:
   mapHeight: 60
   roomSizeRange: {fileID: 11400000, guid: 5da2fb13c5f22da4194ac92bdcbcab24, type: 2}
   maxRooms: 1
-  maxEnemiesInRoom: 3
-  maxItemsInRoom: 2
+  maxEnemiesInRoom: 0
+  maxItemsInRoom: 10
+  GuaranteeItems:
+  - Potion
+  - LightningScroll
