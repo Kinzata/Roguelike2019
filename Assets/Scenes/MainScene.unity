@@ -891,16 +891,6 @@ PrefabInstance:
       objectReference: {fileID: 294116704}
     - target: {fileID: 6947487390095096229, guid: 852468c71e4bebb4daa52cf553b23f89,
         type: 3}
-      propertyPath: maxEnemiesInRoom
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6947487390095096229, guid: 852468c71e4bebb4daa52cf553b23f89,
-        type: 3}
-      propertyPath: viewportWidth
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 6947487390095096229, guid: 852468c71e4bebb4daa52cf553b23f89,
-        type: 3}
       propertyPath: inventoryInterface
       value: 
       objectReference: {fileID: 28601446}
@@ -937,6 +927,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_textInfo.pageCount
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7872264544534211944, guid: 9b04c2e2d4c50af41951e1d70291db7b,
+        type: 3}
+      propertyPath: m_ScaleFactor
+      value: 0.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 7872264544534211944, guid: 9b04c2e2d4c50af41951e1d70291db7b,
+        type: 3}
+      propertyPath: m_UiScaleMode
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7872264544534211945, guid: 9b04c2e2d4c50af41951e1d70291db7b,
         type: 3}

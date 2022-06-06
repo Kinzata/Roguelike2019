@@ -33,8 +33,8 @@ public class GameManager : MonoBehaviour
     private FieldOfViewSystem fovSystem;
 
     [Header("Settings")]
-    public float cameraAdjustmentPercent = .8f;
-    public float viewportWidth = 5f;
+    public float cameraAdjustmentPercent = 0.793f;
+    public float viewportWidth = 10f;
     public int playerViewDistance = 10;
 
     private List<Actor> _actors;
@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour
     {
         roomSizeRange = IntRange.CreateInstance<IntRange>();
         roomSizeRange.min = 6;
-        roomSizeRange.max = 10;
+        roomSizeRange.max = 15;
 
         Application.targetFrameRate = 120;
         QualitySettings.vSyncCount = 0;
