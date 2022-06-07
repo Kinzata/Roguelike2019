@@ -16,5 +16,7 @@ MonoBehaviour:
   mapHeight: 60
   roomSizeRange: {fileID: 11400000, guid: f2b4ccec44b3ca940a4798bbae13098d, type: 2}
   maxRooms: 30
+  minEnemiesInRoom: 0
   maxEnemiesInRoom: 3
   maxItemsInRoom: 2
+  GuaranteeItems: []

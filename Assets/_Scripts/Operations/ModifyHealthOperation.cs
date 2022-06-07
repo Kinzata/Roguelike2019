@@ -1,5 +1,7 @@
 
 
+using System.Linq;
+
 public class ModifyHealthOperation : Operation
 {
     public IntRange ModifierRange;
@@ -15,6 +17,9 @@ public class ModifyHealthOperation : Operation
         // Base entity, just affect that entity
         var scriptTarget = entity;
         if( target != null ){ scriptTarget = target; }
+        if(targetPosition != null ) {
+            scriptTarget = mapData.EntityMap.GetEntities(targetPosition).FirstOrDefault();
+        }
 
         var requiredComponent = scriptTarget.gameObject.GetComponent<Fighter>();
         var result = new OperationResult();

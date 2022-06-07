@@ -360,13 +360,13 @@ public class LevelBuilder
             name: name
         );
 
-        var item = entity.gameObject.AddComponent<Item>();
+        var item = entity.gameObject.AddComponent<RangedItem>();
         item.owner = entity;
 
         // This is temp, will eventually be loaded from an item file or something
-        item.Operations.Add(
-            new ReTargetClosestActorOperation()
-        );
+        //item.Operations.Add(
+        //    new ReTargetClosestActorOperation()
+        //);
 
         item.Operations.Add(
             new ModifyHealthOperation(

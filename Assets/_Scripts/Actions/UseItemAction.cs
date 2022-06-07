@@ -3,13 +3,11 @@ using UnityEngine;
 
 public class UseItemAction : Action
 {
-    private CellPosition _targetPosition;
     private Entity _targetEntity;
     private Item _item;
 
-    public UseItemAction(Actor actor, Item item, Entity targetEntity = null, CellPosition targetPosition = null) : base(actor)
+    public UseItemAction(Actor actor, Item item, Entity targetEntity = null) : base(actor)
     {
-        _targetPosition = targetPosition;
         _targetEntity = targetEntity;
         _item = item;
     }
@@ -18,7 +16,7 @@ public class UseItemAction : Action
     {
         foreach (var operation in _item.Operations)
         {
-            var operationResult = operation.Occur(actor.entity, mapData, _targetEntity, _targetPosition);
+            var operationResult = operation.Occur(actor.entity, mapData, _targetEntity, targetPosition);
 
             SetTargetsFromOperationResult(operationResult);
 
@@ -56,7 +54,7 @@ public class UseItemAction : Action
 
         if (result.NewTargetPosition != null)
         {
-            _targetPosition = result.NewTargetPosition;
+            targetPosition = result.NewTargetPosition;
         }
     }
 }

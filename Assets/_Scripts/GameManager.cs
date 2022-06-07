@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     private GameState _gameState;
     private MessageLog _log;
     private int _currentActorId = 0;
+    private Action _deferredAction;
 
     [Header("Entites")]
     private EntityMap _entityMap;
@@ -84,6 +85,9 @@ public class GameManager : MonoBehaviour
 
     ActionResult ProcessTurn()
     {
+        // The deferred action exists because something in the main loop needs to happen.
+        if( _deferredAction != null ) { return new ActionResult(); }
+
         ActionResult actionResult;
         var actor = _actors.ElementAt(_currentActorId);
         var action = actor.GetAction(_entityMap, _groundMap);
@@ -98,14 +102,14 @@ public class GameManager : MonoBehaviour
             // Cleanup to handle after player potentially changes position
             Camera.main.transform.position = new Vector3(_player.position.x + CalculateCameraAdjustment(), _player.position.y, Camera.main.transform.position.z);
 
-            if( actionResult.status == ActionResultType.Success ){
+            if( actionResult.status == ActionResultType.Success || actionResult.status == ActionResultType.TurnDeferred ){
                 TransitionFrom(_gameState);
                 TransitionTo(actionResult.TransitionToStateOnSuccess);
             }
 
             actionToTake = actionResult.NextAction;
         }
-        while (actionResult.NextAction != null || actionResult.status == ActionResultType.TurnDeferred);
+        while (actionResult.NextAction != null && actionResult.status != ActionResultType.TurnDeferred);
 
 
         if (actionResult.status == ActionResultType.Success)
@@ -116,6 +120,11 @@ public class GameManager : MonoBehaviour
                 fovSystem.Run(new Vector2Int(_player.position.x, _player.position.y), playerViewDistance);
                 _groundMap.UpdateTiles();
             }
+        }
+
+        if( actionResult.status == ActionResultType.TurnDeferred)
+        {
+            _deferredAction = actionToTake;
         }
 
         ProcessNewState();
@@ -237,6 +246,22 @@ public class GameManager : MonoBehaviour
                 inventoryInterface.HandleItemKeyPress();
             }
         }
+        else if (_gameState == GameState.Global_TargetSelect)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                var mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                mPos.x += 0.5f;
+                mPos.y += 0.5f;
+                var tilePos = _groundMap.map.WorldToCell(mPos);
+                _deferredAction.targetPosition = new CellPosition(tilePos);
+                var actor = _actors.ElementAt(_currentActorId);
+                actor.SetNextAction(_deferredAction);
+                _deferredAction = null;
+
+            }
+
+        }
 
     }
 
@@ -247,6 +272,10 @@ public class GameManager : MonoBehaviour
         else if( gameState == GameState.Global_InventoryMenu ){
             _gameState = gameState;
             inventoryInterface.Show();
+        }
+        else if (gameState == GameState.Global_TargetSelect)
+        {
+            _gameState = gameState;
         }
 
 

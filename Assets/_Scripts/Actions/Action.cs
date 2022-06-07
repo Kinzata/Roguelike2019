@@ -1,6 +1,7 @@
 public abstract class Action
 {
     public Actor actor;
+    public CellPosition targetPosition;
     protected ActionResult result;
 
     public Action(Actor actor) {
