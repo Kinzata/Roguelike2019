@@ -14,18 +14,24 @@ public class ModifyHealthOperation : Operation
     {
         // Target and target position could be used for things like throwing something that modifies health.
 
-        // Base entity, just affect that entity
+        // Base entity, just affect that entity, but use a target or cell if provided
         var scriptTarget = entity;
         if( target != null ){ scriptTarget = target; }
         if(targetPosition != null ) {
             scriptTarget = mapData.EntityMap.GetEntities(targetPosition).FirstOrDefault();
         }
 
-        var requiredComponent = scriptTarget.gameObject.GetComponent<Fighter>();
         var result = new OperationResult();
         result.Success = false;
 
-        // Validity check
+        // Validity checks
+        if ( scriptTarget == null)
+        {
+            result.AppendMessage(new Message("There is nothing there.", null));
+            return result;
+        }
+
+        var requiredComponent = scriptTarget.gameObject.GetComponent<Fighter>();
         if( requiredComponent == null ){
             result.AppendMessage(new Message("Target is invalid.", null));
             return result;

@@ -23,7 +23,7 @@ public class TriggerOperationsAction : Action
                 {
                     result.NextAction = new RangedTargetAction(actor, itemAction);
                     result.status = ActionResultType.TurnDeferred;
-                    result.TransitionToStateOnSuccess = GameState.Global_TargetSelect;
+                    result.TransitionToStateOnSuccess = GameState.Global_ActionHandlerDeferred;
 
                     result.AppendMessage(new Message($"Pick a <color=#{ColorUtility.ToHtmlStringRGB(Color.red)}>target</color>...", null));
                 }
@@ -37,5 +37,10 @@ public class TriggerOperationsAction : Action
         }
 
         return result;
+    }
+
+    public override bool UpdateHandler(MapDTO mapData)
+    {
+        return true;
     }
 }

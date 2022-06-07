@@ -14,4 +14,6 @@ public abstract class Action
     }
 
     public abstract ActionResult PerformAction(MapDTO mapData);
+
+    public abstract bool UpdateHandler(MapDTO mapData);
 }

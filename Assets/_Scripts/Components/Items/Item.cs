@@ -6,6 +6,8 @@ public class Item : EntityComponent
     public int Charges = 1;
 
     public List<Operation> Operations;
+    public string Description = "";
+    public List<Message> FlavorMessages = new List<Message>();
 
     public Item(){
         Operations = new List<Operation>();

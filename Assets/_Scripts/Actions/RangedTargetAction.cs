@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 public class RangedTargetAction : Action
@@ -14,11 +15,21 @@ public class RangedTargetAction : Action
         {
             targetPosition = actor.entity.position;
         }
-        //var targetEntity = mapData.EntityMap.GetEntities(targetPosition).FirstOrDefault();
+
         action.targetPosition = targetPosition;
         result.NextAction = action;
         result.status = ActionResultType.Continue;
 
         return result;
+    }
+
+    public override bool UpdateHandler(MapDTO mapData)
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            targetPosition = MouseUtilities.GetCellPositionAtMousePosition(mapData.GroundMap);
+            return true;
+        }
+        return false;
     }
 }

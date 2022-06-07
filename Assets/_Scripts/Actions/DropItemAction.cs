@@ -29,4 +29,9 @@ public class DropItemAction : Action
         
         return result;
     }
+
+    public override bool UpdateHandler(MapDTO mapData)
+    {
+        return true;
+    }
 }

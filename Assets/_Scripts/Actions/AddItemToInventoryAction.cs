@@ -40,4 +40,9 @@ public class AddItemToInventoryAction : Action
 
         return result;
     }
+
+    public override bool UpdateHandler(MapDTO mapData)
+    {
+        return true;
+    }
 }

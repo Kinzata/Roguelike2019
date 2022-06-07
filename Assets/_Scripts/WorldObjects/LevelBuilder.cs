@@ -362,6 +362,10 @@ public class LevelBuilder
 
         var item = entity.gameObject.AddComponent<RangedItem>();
         item.owner = entity;
+        item.Description = "A scroll pulsing with the power of electricity.";
+        item.FlavorMessages.Add(new Message(
+            "A streak of " + "lightning".ColorMe(Color.blue) + " zaps from the scroll", null
+        ));
 
         // This is temp, will eventually be loaded from an item file or something
         //item.Operations.Add(

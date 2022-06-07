@@ -96,8 +96,7 @@ public class GameManager : MonoBehaviour
 
         do
         {
-            var mapData = new MapDTO{ EntityMap = _entityMap, EntityFloorMap = _entityMapBackground, GroundMap = _groundMap };
-            actionResult = actionToTake.PerformAction(mapData);
+            actionResult = actionToTake.PerformAction(GetMapDTO());
 
             // Cleanup to handle after player potentially changes position
             Camera.main.transform.position = new Vector3(_player.position.x + CalculateCameraAdjustment(), _player.position.y, Camera.main.transform.position.z);
@@ -163,6 +162,11 @@ public class GameManager : MonoBehaviour
         RunVisibilitySystem();
     }
 
+    public MapDTO GetMapDTO()
+    {
+        return new MapDTO { EntityMap = _entityMap, EntityFloorMap = _entityMapBackground, GroundMap = _groundMap };
+    }
+
     void RunVisibilitySystem()
     {
         _entityMapBackground.RenderAll();
@@ -200,11 +204,7 @@ public class GameManager : MonoBehaviour
             // Look Action
             if (Input.GetMouseButtonDown(0))
             {
-                var mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                mPos.x += 0.5f;
-                mPos.y += 0.5f;
-                var tilePos = _groundMap.map.WorldToCell(mPos);
-                ReportObjectsAtPosition(new CellPosition(tilePos));
+                ReportObjectsAtPosition(MouseUtilities.GetCellPositionAtMousePosition(_groundMap));
             }
 
             HandleMovementKeys();
@@ -246,39 +246,34 @@ public class GameManager : MonoBehaviour
                 inventoryInterface.HandleItemKeyPress();
             }
         }
-        else if (_gameState == GameState.Global_TargetSelect)
+        else if ( _gameState == GameState.Global_ActionHandlerDeferred)
         {
-            if (Input.GetMouseButtonDown(0))
+            if(_deferredAction.UpdateHandler(GetMapDTO()))
             {
-                var mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                mPos.x += 0.5f;
-                mPos.y += 0.5f;
-                var tilePos = _groundMap.map.WorldToCell(mPos);
-                _deferredAction.targetPosition = new CellPosition(tilePos);
                 var actor = _actors.ElementAt(_currentActorId);
                 actor.SetNextAction(_deferredAction);
                 _deferredAction = null;
-
             }
-
         }
 
     }
 
     public void TransitionTo(GameState gameState) {
-        if( gameState == GameState.Global_LevelScene) {
-            _gameState = gameState;
-        }
-        else if( gameState == GameState.Global_InventoryMenu ){
-            _gameState = gameState;
-            inventoryInterface.Show();
-        }
-        else if (gameState == GameState.Global_TargetSelect)
+        switch (gameState)
         {
-            _gameState = gameState;
+            case GameState.Global_LevelScene:
+                _gameState = gameState;
+                break;
+            case GameState.Global_InventoryMenu:
+                _gameState = gameState;
+                inventoryInterface.Show();
+                break;
+            case GameState.Global_ActionHandlerDeferred:
+                _gameState = gameState;
+                break;
+            default:
+                return;
         }
-
-
     }
 
     public void TransitionFrom(GameState gameState){

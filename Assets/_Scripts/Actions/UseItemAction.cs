@@ -21,6 +21,7 @@ public class UseItemAction : Action
             SetTargetsFromOperationResult(operationResult);
 
             result.Append(operationResult.ActionResult);
+            result.AppendMessages(_item.FlavorMessages);
             result.AppendMessages(operationResult.GetMessages());
         }
 
@@ -56,5 +57,10 @@ public class UseItemAction : Action
         {
             targetPosition = result.NewTargetPosition;
         }
+    }
+
+    public override bool UpdateHandler(MapDTO mapData)
+    {
+        return true;
     }
 }

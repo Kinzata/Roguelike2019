@@ -77,4 +77,9 @@ public class WalkAction : Action
 
         return false;
     }
+
+    public override bool UpdateHandler(MapDTO mapData)
+    {
+        return true;
+    }
 }
