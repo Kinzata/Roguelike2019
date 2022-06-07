@@ -237,7 +237,10 @@ public class LevelBuilder
         );
 
         entity.gameObject.AddComponent<Fighter>().Init(figherValues.maxHp, figherValues.defense, figherValues.offense).owner = entity;
-        entity.gameObject.AddComponent<BasicMonsterAi>().owner = entity;
+        var aiComponent = entity.gameObject.AddComponent<AiComponent>();
+        aiComponent.owner = entity;
+        aiComponent.AssignBehavior(new BasicMonsterAi());
+
         return entity;
     }
 

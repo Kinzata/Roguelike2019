@@ -90,7 +90,7 @@ public class GameManager : MonoBehaviour
 
         ActionResult actionResult;
         var actor = _actors.ElementAt(_currentActorId);
-        var action = actor.GetAction(_entityMap, _groundMap);
+        var action = actor.GetAction(GetMapDTO());
         var actionToTake = action;
         if (action == null) { return new ActionResult(); }
 

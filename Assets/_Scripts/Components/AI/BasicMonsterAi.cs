@@ -1,9 +1,10 @@
-using UnityEngine;
-
-public class BasicMonsterAi : EntityComponent
+public class BasicMonsterAi : AiBehavior
 {
-    public Action GetAction(EntityMap entityMap, GroundMap groundMap)
+    public override Action GetAction(MapDTO mapDto)
     {
+        var groundMap = mapDto.GroundMap;
+        var entityMap = mapDto.EntityMap;
+
         Action action;
         var aStar = new AStar(groundMap, entityMap);
         var target = entityMap.GetPlayer();
@@ -12,7 +13,7 @@ public class BasicMonsterAi : EntityComponent
         if (target == null)
         {
             // If no target, the pathfinding doesn't know what to do, so wait instead and send a message up
-            action = BuildWaitAction(actionResult, entityMap, groundMap);
+            action = BuildWaitAction(actionResult);
         }
 
         // Right now enemies will only act if the player can see them
@@ -25,7 +26,7 @@ public class BasicMonsterAi : EntityComponent
                 if (moveTile == null)
                 {
                     // No path found I guess
-                    action = BuildWaitAction(actionResult, entityMap, groundMap);
+                    action = BuildWaitAction(actionResult);
                 }
                 else
                 {
@@ -38,7 +39,7 @@ public class BasicMonsterAi : EntityComponent
                 if (owner.GetComponent<Fighter>() == null)
                 {
                     // Can't fight though... ha
-                    action = BuildWaitAction(actionResult, entityMap, groundMap);
+                    action = BuildWaitAction(actionResult);
                 }
                 else
                 {
@@ -49,13 +50,13 @@ public class BasicMonsterAi : EntityComponent
         else
         {
             // Nothing to do, not visible, just wait
-            action = BuildWaitAction(actionResult, entityMap, groundMap, logMessage: false);
+            action = BuildWaitAction(actionResult, logMessage: false);
         }
 
         return action;
     }
 
-    private WaitAction BuildWaitAction(ActionResult actionResult, EntityMap entityMap, GroundMap groundMap, bool logMessage = true)
+    private WaitAction BuildWaitAction(ActionResult actionResult, bool logMessage = true)
     {
         if (logMessage)
         {

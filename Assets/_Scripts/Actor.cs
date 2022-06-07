@@ -19,11 +19,11 @@ public class Actor
         nextAction = action;
     }
 
-    public Action GetAction(EntityMap eMap, GroundMap gMap)
+    public Action GetAction(MapDTO mapDto)
     {
-        if (entity.GetComponent<BasicMonsterAi>() is BasicMonsterAi ai)
+        if (entity.GetComponent<AiComponent>() is AiComponent ai)
         {
-            nextAction = ai.GetAction(eMap, gMap);
+            nextAction = ai.GetAction(mapDto);
         }
 
         var action = nextAction;

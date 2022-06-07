@@ -105,7 +105,7 @@ public class Entity : MonoBehaviour
         // Probably a better way to do this
         // Common method on EntityComponent?
         Destroy(gameObject.GetComponent<Fighter>());
-        Destroy(gameObject.GetComponent<BasicMonsterAi>());
+        Destroy(gameObject.GetComponent<AiComponent>());
 
         return actionResult;
     }
