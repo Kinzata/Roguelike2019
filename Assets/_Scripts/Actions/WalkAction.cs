@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class WalkAction : Action
 {
-
     private CellPosition targetPos;
 
     public WalkAction(Actor actor, CellPosition targetPosition) : base(actor)
@@ -13,8 +12,6 @@ public class WalkAction : Action
 
     public override ActionResult PerformAction(MapDTO mapData)
     {
-        var result = new ActionResult();
-
         var isMoveSuccess = MoveTorwards(targetPos, mapData.EntityMap, mapData.GroundMap);
         if (isMoveSuccess)
         {

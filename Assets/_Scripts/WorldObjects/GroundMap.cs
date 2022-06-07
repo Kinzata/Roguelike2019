@@ -153,7 +153,12 @@ public class GroundMap : ScriptableObject
         return neighbors;
     }
 
-    
+    public List<WorldTile> GetTraversableNeighbors(CellPosition pos)
+    {
+        return GetTraversableNeighbors(pos.x, pos.y);
+    }
+
+
 
     void InitializeTiles()
     {

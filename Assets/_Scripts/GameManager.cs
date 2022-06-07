@@ -47,7 +47,7 @@ public class GameManager : MonoBehaviour
 
         var startLocation = levelBuilder.GetStartPosition();
         // Build Player
-        _player = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player");
+        _player = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player", blocks: true);
         _player.gameObject.AddComponent<Player>().owner = _player;
         _player.gameObject.AddComponent<Fighter>().Init(30, 2, 5).owner = _player;
         _player.gameObject.AddComponent<Inventory>().Init(capacity: 10).owner = _player;

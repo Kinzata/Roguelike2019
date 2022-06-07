@@ -131,11 +131,6 @@ public class LevelBuilder
         return rooms;
     }
 
-    private Room CreateRoom(Rect rect)
-    {
-        return new Room(rect, groundMap).BuildRoom();
-    }
-
     private void CreateHorizontalTunnel(int x1, int x2, int y)
     {
         int min = Mathf.Min(x1, x2);
@@ -291,12 +286,18 @@ public class LevelBuilder
 
     private Entity GenerateItem(CellPosition position)
     {
-        if (Random.value <= 0.5f)
+        var chance = Random.value;
+        if (chance <= 0.5f)
         {
             return GenerateItem(position, "Potion");
         }
-        else {
+        else if (chance <= 0.75f)
+        {
             return GenerateItem(position, "LightningScroll");
+        }
+        else
+        {
+            return GenerateItem(position, "ConfusionScroll");
         }
     }
 
@@ -308,6 +309,8 @@ public class LevelBuilder
                 return GeneratePotion(position);
             case "LightningScroll":
                 return GenerateLightningScroll(position);
+            case "ConfusionScroll":
+                return GenerateConfusionScroll(position);
             default:
                 return GeneratePotion(position);
         }
@@ -370,14 +373,58 @@ public class LevelBuilder
             "A streak of " + "lightning".ColorMe(Color.blue) + " zaps from the scroll", null
         ));
 
-        // This is temp, will eventually be loaded from an item file or something
-        //item.Operations.Add(
-        //    new ReTargetClosestActorOperation()
-        //);
-
         item.Operations.Add(
             new ModifyHealthOperation(
                 ScriptableObject.CreateInstance<IntRange>().Init(-10, -16)
+            ));
+
+
+        return entity;
+    }
+
+    private Entity GenerateConfusionScroll(CellPosition position)
+    {
+        SpriteType spriteType;
+        Color color;
+        string name;
+
+        spriteType = SpriteType.Item_Scroll_One;
+        color = new Color32(160, 34, 201, 255);
+        name = "confusion scroll";
+
+        var entity = Entity.CreateEntity().Init(
+            position,
+            spriteType,
+            color,
+            blocks: false,
+            name: name
+        );
+
+        var item = entity.gameObject.AddComponent<RangedItem>();
+        item.owner = entity;
+        item.Description = "A scroll pulsing with the power of electricity.";
+        item.FlavorMessages.Add(new Message(
+            $"A cloud of " + "purple dust".ColorMe(color) + " swirls around the head of target.", null
+        ));
+
+        var behavior = new ConfusedAi(5);
+        behavior.switchTo = delegate (Entity delEntity, ActionResult result)
+        {
+            result.AppendMessage(new Message(
+                $"The {delEntity.GetColoredName()} is now {"confused".ColorMe(color)}", null
+                ));
+        };
+
+        behavior.switchFrom = delegate (Entity delEntity, ActionResult result)
+        {
+            result.AppendMessage(new Message(
+                $"The {delEntity.GetColoredName()} is no longer {"confused".ColorMe(color)}", null
+                ));
+        };
+
+        item.Operations.Add(
+            new ApplyAiBehavorOperation(
+                behavior
             ));
 
 
