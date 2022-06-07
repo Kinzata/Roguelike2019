@@ -41,7 +41,7 @@ public class UseItemAction : Action
             GameObject.Destroy(_item.gameObject);
         }
 
-        result.Success = true;
+        result.status = ActionResultType.Success;
         result.TransitionToStateOnSuccess = GameState.Global_LevelScene;
 
         return result;

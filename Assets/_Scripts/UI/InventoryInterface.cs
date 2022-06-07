@@ -117,7 +117,7 @@ public class InventoryInterface : MonoBehaviour
              result.AppendMessage(new Message(item.ToString(), null));
         }
 
-        result.Success = false;
+        result.status = ActionResultType.Failure;
         return result;
     }
 

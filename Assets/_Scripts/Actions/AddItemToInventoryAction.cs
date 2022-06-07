@@ -26,7 +26,7 @@ public class AddItemToInventoryAction : Action
                 var addItemResult = inventoryComponent.AddItem(item);
                 result.AppendMessage(new Message($"{actor.entity.GetColoredName()} picks up {item.owner.GetColoredName()}.", null));
                 result.Append(addItemResult);
-                result.Success = true;
+                result.status = ActionResultType.Success;
             }
             else {
                 // Inventory is full

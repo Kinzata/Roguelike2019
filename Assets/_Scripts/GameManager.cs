@@ -9,7 +9,6 @@ public class GameManager : MonoBehaviour
     public PlayerStatInterface statText;
     public InventoryInterface inventoryInterface;
     private GameState _gameState;
-    private GameState _tempGameState;
     private MessageLog _log;
     private int _currentActorId = 0;
 
@@ -85,7 +84,7 @@ public class GameManager : MonoBehaviour
 
     ActionResult ProcessTurn()
     {
-        var actionResult = new ActionResult();
+        ActionResult actionResult;
         var actor = _actors.ElementAt(_currentActorId);
         var action = actor.GetAction(_entityMap, _groundMap);
         var actionToTake = action;
@@ -97,20 +96,19 @@ public class GameManager : MonoBehaviour
             actionResult = actionToTake.PerformAction(mapData);
 
             // Cleanup to handle after player potentially changes position
-            var adjustment =
             Camera.main.transform.position = new Vector3(_player.position.x + CalculateCameraAdjustment(), _player.position.y, Camera.main.transform.position.z);
 
-            if( actionResult.Success ){
+            if( actionResult.status == ActionResultType.Success ){
                 TransitionFrom(_gameState);
                 TransitionTo(actionResult.TransitionToStateOnSuccess);
             }
 
             actionToTake = actionResult.NextAction;
         }
-        while (actionResult.NextAction != null);
+        while (actionResult.NextAction != null || actionResult.status == ActionResultType.TurnDeferred);
 
 
-        if (actionResult.Success)
+        if (actionResult.status == ActionResultType.Success)
         {
             _currentActorId = (_currentActorId + 1) % _actors.Count();
             if (actor.entity == _player)
@@ -227,7 +225,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        else if (_gameState == GameState.Global_InventoryMenu)
+        else if (_gameState == GameState.Global_InventoryMenu )
         {
             if (Input.GetKeyDown(KeyCode.I))
             { 

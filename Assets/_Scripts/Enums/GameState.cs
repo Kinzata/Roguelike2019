@@ -4,5 +4,6 @@ public enum GameState{
     Global_PlayerDead,
     Global_InventoryMenu,
     Global_LevelScene,
+    Global_TargetSelect,
     Unspecified
 }

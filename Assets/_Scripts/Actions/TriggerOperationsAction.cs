@@ -17,7 +17,7 @@ public class TriggerOperationsAction : Action
             var itemComponent = _targetEntity.gameObject.GetComponent<Item>();
             if( itemComponent != null ){
                 result.NextAction = new UseItemAction(actor, itemComponent);
-                result.Success = false;
+                result.status = ActionResultType.Continue;
             }
         }
 

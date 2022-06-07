@@ -22,7 +22,7 @@ public class DropItemAction : Action
             inventoryComponent.RemoveItem(_item);
 
             result.AppendMessage(new Message($"{actor.entity.GetColoredName()} drops {_item.owner.GetColoredName()}.", null));
-            result.Success = true;
+            result.status = ActionResultType.Success;
         }
 
         result.TransitionToStateOnSuccess = GameState.Global_LevelScene;

@@ -19,11 +19,11 @@ public class MeleeAttackAction : Action
             var targets = mapData.EntityMap.GetEntities(targetPos).Where(e => e.gameObject.GetComponent<Fighter>() != null);
 
             result.Append(fighterComponent.Attack(targets.FirstOrDefault()));
-            result.Success = true;
+            result.status = ActionResultType.Success;
         }
         else
         {
-            result.Success = false;
+            result.status = ActionResultType.Failure;
         }
 
         return result;

@@ -18,7 +18,7 @@ public class WalkAction : Action
         var isMoveSuccess = MoveTorwards(targetPos, mapData.EntityMap, mapData.GroundMap);
         if (isMoveSuccess)
         {
-            result.Success = true;
+            result.status = ActionResultType.Success;
         }
         else
         {
@@ -41,7 +41,7 @@ public class WalkAction : Action
                 result.NextAction = new MeleeAttackAction(actor, targetPos);
             }
 
-            result.Success = false;
+            result.status = ActionResultType.Failure;
         }
 
         return result;

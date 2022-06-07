@@ -62,7 +62,7 @@ public class BasicMonsterAi : EntityComponent
             actionResult.AppendMessage(new Message($"The {owner.name} is confused.  What should it do?", null));
         }
         var action = new WaitAction(owner.actor);
-        actionResult.Success = true;
+        actionResult.status = ActionResultType.Success;
         action.SetActionResult(actionResult);
         return action;
     }

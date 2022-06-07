@@ -7,7 +7,7 @@ public class WaitAction : Action
     public override ActionResult PerformAction(MapDTO mapData)
     {
         // Do Nothing
-        result.Success = true;
+        result.status = ActionResultType.Success;
 
         return result;
     }
