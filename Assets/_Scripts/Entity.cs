@@ -104,8 +104,11 @@ public class Entity : MonoBehaviour
 
         // Probably a better way to do this
         // Common method on EntityComponent?
-        Destroy(gameObject.GetComponent<Fighter>());
-        Destroy(gameObject.GetComponent<AiComponent>());
+        // This exists because the game object remains.  We are turning it into a corpse.  But we don't want
+        // these components anymore.  Currently, we remove the actor from the actors list and entity map.
+        // What it it gets revived?  We need a way to know what components it used to have.
+        //Destroy(gameObject.GetComponent<Fighter>());
+        //Destroy(gameObject.GetComponent<AiComponent>());
 
         return actionResult;
     }
