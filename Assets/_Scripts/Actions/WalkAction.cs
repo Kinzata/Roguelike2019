@@ -3,16 +3,13 @@ using UnityEngine;
 
 public class WalkAction : Action
 {
-    private CellPosition targetPos;
-
-    public WalkAction(Actor actor, CellPosition targetPosition) : base(actor)
+    public WalkAction(Actor actor, TargetData targetData) : base(actor, targetData)
     {
-        this.targetPos = targetPosition;
     }
 
     public override ActionResult PerformAction(MapDTO mapData)
     {
-        var isMoveSuccess = MoveTorwards(targetPos, mapData.EntityMap, mapData.GroundMap);
+        var isMoveSuccess = MoveTorwards(targetData.targetPosition, mapData.EntityMap, mapData.GroundMap);
         if (isMoveSuccess)
         {
             result.status = ActionResultType.Success;
@@ -21,7 +18,7 @@ public class WalkAction : Action
         {
             // Ok, why can't we move?
             // Is it a wall?
-            var worldTile = mapData.GroundMap.GetTileAt(targetPos);
+            var worldTile = mapData.GroundMap.GetTileAt(targetData.targetPosition);
             if (worldTile != null)
             {
                 // is it blocked?
@@ -33,9 +30,9 @@ public class WalkAction : Action
             }
 
             // Does an entity exist?
-            if (mapData.EntityMap.GetEntities(targetPos).Any())
+            if (mapData.EntityMap.GetEntities(targetData.targetPosition).Any())
             {
-                result.NextAction = new MeleeAttackAction(actor, targetPos);
+                result.NextAction = new MeleeAttackAction(actor, targetData);
             }
 
             result.status = ActionResultType.Failure;

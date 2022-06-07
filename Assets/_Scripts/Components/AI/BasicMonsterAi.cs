@@ -30,7 +30,7 @@ public class BasicMonsterAi : AiBehavior
                 }
                 else
                 {
-                    action = new WalkAction(owner.actor, new CellPosition(moveTile.x, moveTile.y));
+                    action = new WalkAction(owner.actor, new TargetData { targetPosition = new CellPosition(moveTile.x, moveTile.y) });
                 }
             }
             else
@@ -43,7 +43,7 @@ public class BasicMonsterAi : AiBehavior
                 }
                 else
                 {
-                    action = new MeleeAttackAction(owner.actor, target.position);
+                    action = new MeleeAttackAction(owner.actor, new TargetData { targetEntity = target });
                 }
             }
         }

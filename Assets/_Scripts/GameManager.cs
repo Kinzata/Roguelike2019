@@ -193,7 +193,7 @@ public class GameManager : MonoBehaviour
     void SetMoveDirection(Vector2Int direction)
     {
         CellPosition newPosition = new CellPosition(_player.position.x + direction.x, _player.position.y + direction.y);
-        var action = new WalkAction(_player.actor, newPosition);
+        var action = new WalkAction(_player.actor, new TargetData { targetPosition = newPosition });
         _player.actor.SetNextAction(action);
     }
 

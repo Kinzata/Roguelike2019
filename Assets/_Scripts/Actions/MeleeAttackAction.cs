@@ -2,21 +2,21 @@ using System.Linq;
 
 public class MeleeAttackAction : Action
 {
-    private CellPosition targetPos;
-    public MeleeAttackAction(Actor actor, CellPosition target) : base(actor)
+    public MeleeAttackAction(Actor actor, TargetData targetData) : base(actor, targetData)
     {
-        this.targetPos = target;
     }
 
     public override ActionResult PerformAction(MapDTO mapData)
     {
+        // TODO: Refactor to allow hitting multiple targets
+
         // validate components
         var fighterComponent = actor.entity.gameObject.GetComponent<Fighter>();
-        var inMeleeDistance = actor.entity.DistanceTo(targetPos) <= 1; // If this was an attribute could allow for 2+ tile melee weapons
+        var inMeleeDistance = actor.entity.DistanceTo(targetData.GetTargets(mapData, (e) => true).FirstOrDefault()) <= 1; // If this was an attribute could allow for 2+ tile melee weapons
 
         if (fighterComponent != null && inMeleeDistance)
         {
-            var targets = mapData.EntityMap.GetEntities(targetPos).Where(e => e.gameObject.GetComponent<Fighter>() != null);
+            var targets = targetData.GetTargets(mapData, (e) => e.gameObject.GetComponent<Fighter>() != null);
 
             result.Append(fighterComponent.Attack(targets.FirstOrDefault()));
             result.status = ActionResultType.Success;

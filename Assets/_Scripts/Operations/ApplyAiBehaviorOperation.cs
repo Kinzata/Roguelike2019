@@ -13,22 +13,22 @@ public class ApplyAiBehavorOperation : Operation
         behaviorToApply = behavior;
     }
 
-    public override OperationResult Occur(Entity entity, MapDTO mapData, Entity target = null, CellPosition targetPosition = null)
+    public override OperationResult Occur(Entity entity, MapDTO mapData, TargetData targetData)
     {
         // Target and target position could be used for things like throwing something that modifies health.
 
         // Base entity, just affect that entity, but use a target or cell if provided
         var scriptTarget = entity;
-        if( target != null ){ scriptTarget = target; }
-        if(targetPosition != null ) {
-            scriptTarget = mapData.EntityMap.GetEntities(targetPosition).FirstOrDefault();
+        if( targetData.targetEntity != null ){ scriptTarget = targetData.targetEntity; }
+        if( targetData.targetPosition != null ) {
+            scriptTarget = targetData.GetTargets(mapData, (e) => true).FirstOrDefault();
         }
 
         var result = new OperationResult();
         result.Success = false;
 
         // Validity checks
-        if ( scriptTarget == null)
+        if ( scriptTarget == null )
         {
             result.AppendMessage(new Message("There is nothing there.", null));
             return result;

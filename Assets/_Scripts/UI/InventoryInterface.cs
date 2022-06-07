@@ -123,7 +123,7 @@ public class InventoryInterface : MonoBehaviour
 
     public void UseItem(InventoryItem item){
         if( isUse ){
-            _inventory.owner.actor.SetNextAction( new TriggerOperationsAction(_inventory.owner.actor, item.GetItem().owner ));
+            _inventory.owner.actor.SetNextAction( new TriggerOperationsAction(_inventory.owner.actor, null, item.GetItem().owner ));
         }
         else if( isDrop ){
             _inventory.owner.actor.SetNextAction( new DropItemAction(_inventory.owner.actor, item.GetItem()));

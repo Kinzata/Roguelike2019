@@ -5,8 +5,7 @@ public class OperationResult
 {
     private List<Message> messages;
     public bool Success = false;
-    public Entity NewTargetEntity;
-    public CellPosition NewTargetPosition;
+    public TargetData newTargetData;
 
     // I need to find a good way to merge these... right now they feel like they should be two separate
     // things, but I'm not sure that is the case.  

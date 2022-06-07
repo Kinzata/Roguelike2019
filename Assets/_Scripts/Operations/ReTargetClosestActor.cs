@@ -4,7 +4,7 @@ using System.Linq;
 
 public class ReTargetClosestActorOperation : Operation
 {
-    public override OperationResult Occur(Entity entity, MapDTO mapData, Entity target = null, CellPosition targetPosition = null)
+    public override OperationResult Occur(Entity entity, MapDTO mapData, TargetData targetData)
     {
         var scriptTarget = entity;
 
@@ -19,7 +19,8 @@ public class ReTargetClosestActorOperation : Operation
             .OrderBy( e => e.DistanceTo(entity) )
             .First();
 
-        result.NewTargetEntity = closestEntity;
+        targetData.targetEntity = closestEntity;
+        result.newTargetData = targetData;
 
         return result;
     }

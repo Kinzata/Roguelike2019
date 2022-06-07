@@ -28,7 +28,7 @@ public class ConfusedAi : AiBehavior
             if(moveTile)
             {
                 actionResult.AppendMessage(new Message($"The {owner.GetColoredName()} stumbles around.", null));
-                action = new WalkAction(owner.actor, new CellPosition(moveTile.x, moveTile.y));
+                action = new WalkAction(owner.actor, new TargetData { targetPosition = new CellPosition(moveTile.x, moveTile.y) });
                 action.SetActionResult(actionResult);
             }
             else
