@@ -9,16 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45c709f083a40dd46930168ca3bc4dd1, type: 3}
+  m_Script: {fileID: 11500000, guid: 793818f8f2638724ab88d53b33b19ace, type: 3}
   m_Name: TestRoom
   m_EditorClassIdentifier: 
   mapWidth: 80
   mapHeight: 60
-  roomSizeRange: {fileID: 11400000, guid: 5da2fb13c5f22da4194ac92bdcbcab24, type: 2}
-  maxRooms: 1
+  roomSizeRange: {fileID: 0}
+  maxRooms: 30
   minEnemiesInRoom: 3
-  maxEnemiesInRoom: 1
-  maxItemsInRoom: 10
-  GuaranteeItems:
-  - FireballScroll
-  - LightningScroll
+  maxEnemiesInRoom: 3
+  maxItemsInRoom: 2
+  GuaranteeItems: []

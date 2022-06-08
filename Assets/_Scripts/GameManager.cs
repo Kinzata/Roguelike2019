@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 
 public class GameManager : MonoBehaviour
 {
-    private Entity _player;
+  
     public PlayerStatInterface statText;
     public InventoryInterface inventoryInterface;
     private GameState _gameState;
@@ -13,98 +13,81 @@ public class GameManager : MonoBehaviour
     private int _currentActorId = 0;
     private Action _deferredAction;
 
-    [Header("Entites")]
-    private EntityMap _entityMap;
-    private EntityMap _entityMapBackground;
-
-
-    [Header("Floor")]
-    private GroundMap _groundMap;
-
-
+    public Level currentLevel;
     public LevelDataScriptableObject levelData;
 
     [Header("Systems")]
     private FieldOfViewSystem fovSystem;
-    private MiscMap _miscMap;
 
     [Header("Settings")]
     public float cameraAdjustmentPercent = 0.793f;
     public float viewportWidth = 10f;
     public int playerViewDistance = 10;
 
-    private List<Actor> _actors;
-
     void Start()
     {
         Application.targetFrameRate = 120;
         QualitySettings.vSyncCount = 0;
 
-        var levelBuilder = new LevelBuilder();
-        levelBuilder.Generate(levelData);
-        _groundMap = levelBuilder.GetGroundMap();
-        _entityMap = levelBuilder.GetEntityMap();
-        _entityMapBackground = levelBuilder.GetPassiveEntityMap();
-        _miscMap = levelBuilder.GetMiscMap();
-        _actors = levelBuilder.GetActors();
+        currentLevel = new Level();
+        currentLevel.BuildLevel(levelData);
 
-        var startLocation = levelBuilder.GetStartPosition();
         // Build Player
-        _player = Entity.CreateEntity().Init(startLocation.Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player", blocks: true);
-        _player.gameObject.AddComponent<Player>().owner = _player;
-        _player.gameObject.AddComponent<Fighter>().Init(30, 2, 5).owner = _player;
-        _player.gameObject.AddComponent<Inventory>().Init(capacity: 10).owner = _player;
-        _actors.Add(new Actor(_player));
-        _entityMap.AddEntity(_player);
+        var player = Entity.CreateEntity().Init(currentLevel.GetEntryPosition().Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player", blocks: true);
+        player.gameObject.AddComponent<Player>().owner = player;
+        player.gameObject.AddComponent<Fighter>().Init(30, 2, 5).owner = player;
+        player.gameObject.AddComponent<Inventory>().Init(capacity: 10).owner = player;
+
+        currentLevel.SetPlayer(player);
 
         SetDesiredScreenSize();
-        Camera.main.transform.position = new Vector3(_player.position.x + CalculateCameraAdjustment(), _player.position.y, Camera.main.transform.position.z);
+        Camera.main.transform.position = new Vector3(player.position.x + CalculateCameraAdjustment(), player.position.y, Camera.main.transform.position.z);
 
         // Setup Systems
-        fovSystem = new FieldOfViewSystem(_groundMap);
-        fovSystem.Run(new Vector2Int(_player.position.x, _player.position.y), playerViewDistance);
+        fovSystem = new FieldOfViewSystem(currentLevel.GetMapDTO().GroundMap);
+        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
 
-        RunVisibilitySystem();
+        statText.SetPlayer(player);
+        inventoryInterface.SetInventory(player.GetComponent<Inventory>());
 
-        // Final Setup
-        _groundMap.UpdateTiles();
-
-        statText.SetPlayer(_player);
-        inventoryInterface.SetInventory(_player.GetComponent<Inventory>());
         _gameState = GameState.Global_LevelScene;
-
         _log = FindObjectOfType<MessageLog>();
+
+        currentLevel.FinalSetup();
     }
 
     void Update()
     {
-        // Handle User Input (yes we're doing this elsewhere too, plan on fixing that)
         HandleUserInput();
 
         var turnResults = ProcessTurn();
         ProcessTurnResults(turnResults);
 
+        currentLevel.Update();
     }
 
     ActionResult ProcessTurn()
     {
         // The deferred action exists because something in the main loop needs to happen.
-        if( _deferredAction != null ) { return new ActionResult(); }
+        if (_deferredAction != null) { return new ActionResult(); }
 
         ActionResult actionResult;
-        var actor = _actors.ElementAt(_currentActorId);
-        var action = actor.GetAction(GetMapDTO());
+        var actor = currentLevel.GetActors().ElementAt(_currentActorId);
+        var action = actor.GetAction(currentLevel.GetMapDTO());
         var actionToTake = action;
         if (action == null) { return new ActionResult(); }
 
+        var player = currentLevel.GetPlayer();
+
         do
         {
-            actionResult = actionToTake.PerformAction(GetMapDTO());
+            actionResult = actionToTake.PerformAction(currentLevel.GetMapDTO());
 
             // Cleanup to handle after player potentially changes position
-            Camera.main.transform.position = new Vector3(_player.position.x + CalculateCameraAdjustment(), _player.position.y, Camera.main.transform.position.z);
+            Camera.main.transform.position = new Vector3(player.position.x + CalculateCameraAdjustment(), player.position.y, Camera.main.transform.position.z);
 
-            if( actionResult.status == ActionResultType.Success || actionResult.status == ActionResultType.TurnDeferred ){
+            if (actionResult.status == ActionResultType.Success || actionResult.status == ActionResultType.TurnDeferred)
+            {
                 TransitionFrom(_gameState);
                 TransitionTo(actionResult.TransitionToStateOnSuccess);
             }
@@ -116,23 +99,24 @@ public class GameManager : MonoBehaviour
 
         if (actionResult.status == ActionResultType.Success)
         {
-            _currentActorId = (_currentActorId + 1) % _actors.Count();
-            if (actor.entity == _player)
+            _currentActorId = (_currentActorId + 1) % currentLevel.GetActors().Count();
+            if (actor.entity == player)
             {
-                fovSystem.Run(new Vector2Int(_player.position.x, _player.position.y), playerViewDistance);
-                _groundMap.UpdateTiles();
+                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
+                currentLevel.OnTurnSuccess();
             }
         }
 
-        if( actionResult.status == ActionResultType.TurnDeferred)
+        if (actionResult.status == ActionResultType.TurnDeferred)
         {
             _deferredAction = actionToTake;
         }
 
-        ProcessNewState();
+        currentLevel.RunVisibilitySystem();
 
         return actionResult;
     }
+
 
     void ProcessTurnResults(ActionResult results)
     {
@@ -140,46 +124,22 @@ public class GameManager : MonoBehaviour
         var deadEntities = results.GetEntityEvent("dead");
         if (deadEntities.Count() > 0)
         {
-            var actionResult = new ActionResult();
-            foreach (var dead in deadEntities)
+            var result = currentLevel.HandleDeadEntities(deadEntities);
+            foreach (var message in result.GetMessages()) { _log.AddMessage(message); }
+
+            if( result.TransitionToStateOnSuccess != GameState.Unspecified )
             {
-                if (dead == _player)
-                {
-                    actionResult.Append(dead.ConvertToDeadPlayer());
-                    _gameState = GameState.Global_PlayerDead;
-                }
-                else
-                {
-                    actionResult.Append(dead.ConvertToDeadMonster());
-                }
-
-                _entityMap.SwapEntityToMap(dead, _entityMapBackground);
-                _actors.Remove(dead.actor);
+                TransitionFrom(_gameState);
+                TransitionTo(result.TransitionToStateOnSuccess);
             }
-            foreach (var message in actionResult.GetMessages()) { _log.AddMessage(message); }
         }
-    }
-
-    void ProcessNewState()
-    {
-        RunVisibilitySystem();
-    }
-
-    public MapDTO GetMapDTO()
-    {
-        return new MapDTO { EntityMap = _entityMap, EntityFloorMap = _entityMapBackground, GroundMap = _groundMap, MiscMap = _miscMap};
-    }
-
-    void RunVisibilitySystem()
-    {
-        _entityMapBackground.RenderAll();
-        _entityMap.RenderAll();
     }
 
     private void ReportObjectsAtPosition(CellPosition pos)
     {
-        var entityNames = _entityMap.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
-        var backgroundNames = _entityMapBackground.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
+        var map = currentLevel.GetMapDTO();
+        var entityNames = map.EntityMap.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
+        var backgroundNames = map.EntityFloorMap.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
 
         var entitiesToLog = entityNames.Concat(backgroundNames);
         var message = "There is nothing there.";
@@ -195,9 +155,10 @@ public class GameManager : MonoBehaviour
 
     void SetMoveDirection(Vector2Int direction)
     {
-        CellPosition newPosition = new CellPosition(_player.position.x + direction.x, _player.position.y + direction.y);
-        var action = new WalkAction(_player.actor, new TargetData { targetPosition = newPosition });
-        _player.actor.SetNextAction(action);
+        var player = currentLevel.GetPlayer();
+        CellPosition newPosition = new CellPosition(player.position.x + direction.x, player.position.y + direction.y);
+        var action = new WalkAction(player.actor, new TargetData { targetPosition = newPosition });
+        player.actor.SetNextAction(action);
     }
 
     void HandleUserInput()
@@ -207,31 +168,35 @@ public class GameManager : MonoBehaviour
             // Look Action
             if (Input.GetMouseButtonDown(0))
             {
-                ReportObjectsAtPosition(MouseUtilities.GetCellPositionAtMousePosition(_groundMap));
+                ReportObjectsAtPosition(MouseUtilities.GetCellPositionAtMousePosition(currentLevel.GetMapDTO().GroundMap));
             }
 
             HandleMovementKeys();
 
+            // Wait
             if (Input.GetKeyDown(KeyCode.Keypad5))
             {
-                var action = new WaitAction(_player.actor);
-                _player.actor.SetNextAction(action);
+                var player = currentLevel.GetPlayer();
+                var action = new WaitAction(player.actor);
+                player.actor.SetNextAction(action);
             }
 
+            // Pickup!
             if (Input.GetKeyDown(KeyCode.G))
             {
-                // Pickup!
-                var action = new PickupItemAction(_player.actor);
-                _player.actor.SetNextAction(action);
+                var player = currentLevel.GetPlayer();
+                var action = new PickupItemAction(player.actor);
+                player.actor.SetNextAction(action);
             }
 
+            // Inventory
             if (Input.GetKeyDown(KeyCode.I))
             {
                 TransitionFrom(_gameState);
                 TransitionTo(GameState.Global_InventoryMenu);
 
                 // Open inventory of player
-                _log.AddMessage(new Message($"{_player.actor.entity.GetColoredName()} opens their inventory...", null));
+                _log.AddMessage(new Message($"{currentLevel.GetPlayer().actor.entity.GetColoredName()} opens their inventory...", null));
                 var result = inventoryInterface.DescribeInventory();
                 ProcessTurnResults(result);
             }
@@ -251,9 +216,9 @@ public class GameManager : MonoBehaviour
         }
         else if ( _gameState == GameState.Global_ActionHandlerDeferred)
         {
-            if(_deferredAction.UpdateHandler(GetMapDTO()))
+            if(_deferredAction.UpdateHandler(currentLevel.GetMapDTO()))
             {
-                var actor = _actors.ElementAt(_currentActorId);
+                var actor = currentLevel.GetActors().ElementAt(_currentActorId);
                 actor.SetNextAction(_deferredAction);
                 _deferredAction = null;
             }

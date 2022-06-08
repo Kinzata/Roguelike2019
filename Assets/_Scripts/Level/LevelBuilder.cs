@@ -92,11 +92,6 @@ public class LevelBuilder
         return actors;
     }
 
-    public CellPosition GetStartPosition()
-    {
-        return groundMap.rooms.First().center;
-    }
-
     private IList<Room> MakeRooms(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight, Tilemap tileMap)
     {
         var rooms = new List<Room>();
