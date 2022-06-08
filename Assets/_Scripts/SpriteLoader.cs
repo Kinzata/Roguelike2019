@@ -42,6 +42,8 @@ public class SpriteLoader : MonoBehaviour
                 return spriteSheet[89];
             case SpriteType.Monster_Troll:
                 return spriteSheet[92];
+            case SpriteType.Misc_Target_One:
+                return spriteSheet[475];
             case SpriteType.Remains_Bones:
                 return spriteSheet[479];
             case SpriteType.Remains_Skull:
@@ -51,6 +53,8 @@ public class SpriteLoader : MonoBehaviour
             case SpriteType.Item_Potion_Empty:
                 return spriteSheet[847];
             case SpriteType.Item_Scroll_One:
+                return spriteSheet[880];
+            case SpriteType.Item_Scroll_Two:
                 return spriteSheet[881];
             default:
                 throw new System.Exception("Bad sprite sheet enum type.");

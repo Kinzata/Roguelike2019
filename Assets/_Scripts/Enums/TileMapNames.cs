@@ -1,12 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public enum TileMapType
+﻿public enum TileMapType
 {
     EntityMap,
     EntityMap_Background,
-    GroundMap
+    GroundMap,
+    MiscMap
 }
 
 public static class TileMapNamesExtensions
@@ -21,6 +18,8 @@ public static class TileMapNamesExtensions
                 return "EntityMap-Background";
             case TileMapType.GroundMap:
                 return "GroundMap";
+            case TileMapType.MiscMap:
+                return "MiscMap";
             default:
                 return "";
         }

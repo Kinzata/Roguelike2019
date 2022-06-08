@@ -6,7 +6,8 @@ public class TargetData
 {
     public Entity targetEntity;
     public CellPosition targetPosition;
-    public int range;
+    public int range; // TODO
+    public int radius;
 
     public List<Entity> GetTargets(MapDTO mapDto, Func<Entity, bool> filter)
     {
@@ -17,10 +18,11 @@ public class TargetData
         }
         else
         {
-            targets = mapDto.EntityMap.GetEntities(targetPosition).Where(e => filter(e)).ToList();
+            targets = mapDto.EntityMap
+                .GetEntities(targetPosition, radius)
+                    .Where(e => filter(e))
+                    .ToList();
         }
-
-        //TODO: range
 
         return targets;
     }

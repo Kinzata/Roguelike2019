@@ -17,11 +17,16 @@ public class TriggerOperationsAction : Action
             if (itemComponent != null)
             {
                 var itemAction = new UseItemAction(actor, itemComponent);
-                if ( itemComponent is RangedItem )
+                if ( itemComponent is RangedItem rItem )
                 {
                     result.NextAction = new RangedTargetAction(actor, itemAction);
                     result.status = ActionResultType.TurnDeferred;
                     result.TransitionToStateOnSuccess = GameState.Global_ActionHandlerDeferred;
+                    result.NextAction.targetData = new TargetData
+                    {
+                        range = rItem.range,
+                        radius = rItem.radius
+                    };
 
                     result.AppendMessage(new Message($"Pick a <color=#{ColorUtility.ToHtmlStringRGB(Color.red)}>target</color>...", null));
                 }
@@ -29,6 +34,12 @@ public class TriggerOperationsAction : Action
                 {
                     result.NextAction = itemAction;
                     result.status = ActionResultType.Continue;
+                    result.NextAction.targetData = new TargetData
+                    {
+                        range = 0,
+                        radius = 0,
+                        targetEntity = actor.entity
+                    };
                 }
             }
             

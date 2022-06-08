@@ -48,6 +48,13 @@ public class EntityMap : ScriptableObject
         return entities.Where(e => e.position == pos ).Select(e => e);
     }
 
+    public IEnumerable<Entity> GetEntities(CellPosition pos, int radius)
+    {
+        return entities
+            .Where(e => e.DistanceTo(pos) <= radius)
+            .Select(e => e);
+    }
+
     public void DrawEntity(Entity entity)
     {
         entity.SetVisible(groundMap.isTileVisible(entity.position));

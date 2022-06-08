@@ -8,6 +8,7 @@ public class LevelBuilder
     public GroundMap groundMap;
     public EntityMap entityMap;
     public EntityMap passiveEntityMap;
+    public MiscMap miscMap;
     public List<Actor> actors;
 
     public void Generate(LevelDataScriptableObject data)
@@ -25,6 +26,8 @@ public class LevelBuilder
         passiveEntityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, groundMap);
 
         MakePassiveEntities(data, passiveEntityMap);
+
+        MakeMiscMap(data);
     }
 
     public void MakeMap(LevelDataScriptableObject data)
@@ -58,6 +61,12 @@ public class LevelBuilder
         }
     }
 
+    public void MakeMiscMap(LevelDataScriptableObject data)
+    {
+        var miscTileMap = GameObject.Find(TileMapType.MiscMap.Name()).GetComponent<Tilemap>();
+        miscMap = ScriptableObject.CreateInstance<MiscMap>().Init(data.mapWidth, data.mapHeight, miscTileMap);
+    }
+
     public GroundMap GetGroundMap()
     {
         return groundMap;
@@ -71,6 +80,11 @@ public class LevelBuilder
     public EntityMap GetPassiveEntityMap()
     {
         return passiveEntityMap;
+    }
+
+    public MiscMap GetMiscMap()
+    {
+        return miscMap;
     }
 
     public List<Actor> GetActors()
@@ -295,9 +309,13 @@ public class LevelBuilder
         {
             return GenerateItem(position, "LightningScroll");
         }
-        else
+        else if(chance <= 0.85f)
         {
             return GenerateItem(position, "ConfusionScroll");
+        }
+        else
+        {
+            return GenerateItem(position, "FireballScroll");
         }
     }
 
@@ -311,6 +329,8 @@ public class LevelBuilder
                 return GenerateLightningScroll(position);
             case "ConfusionScroll":
                 return GenerateConfusionScroll(position);
+            case "FireballScroll":
+                return GenerateFireballScroll(position);
             default:
                 return GeneratePotion(position);
         }
@@ -372,6 +392,8 @@ public class LevelBuilder
         item.FlavorMessages.Add(new Message(
             "A streak of " + "lightning".ColorMe(Color.blue) + " zaps from the scroll", null
         ));
+        item.range = 10;
+        item.radius = 0;
 
         item.Operations.Add(
             new ModifyHealthOperation(
@@ -402,10 +424,12 @@ public class LevelBuilder
 
         var item = entity.gameObject.AddComponent<RangedItem>();
         item.owner = entity;
-        item.Description = "A scroll pulsing with the power of electricity.";
+        item.Description = "A scroll pulsing with the power of purple dust.";
         item.FlavorMessages.Add(new Message(
             $"A cloud of " + "purple dust".ColorMe(color) + " swirls around the head of target.", null
         ));
+        item.range = 10;
+        item.radius = 0;
 
         var behavior = new ConfusedAi(5);
         behavior.switchTo = delegate (Entity delEntity, ActionResult result)
@@ -427,9 +451,43 @@ public class LevelBuilder
                 behavior
             ));
 
+        return entity;
+    }
+
+    private Entity GenerateFireballScroll(CellPosition position)
+    {
+        SpriteType spriteType;
+        Color color;
+        string name;
+
+        spriteType = SpriteType.Item_Scroll_Two;
+        color = new Color32(255, 107, 33, 255);
+        name = "fireball scroll";
+
+        var entity = Entity.CreateEntity().Init(
+            position,
+            spriteType,
+            color,
+            blocks: false,
+            name: name
+        );
+
+        var item = entity.gameObject.AddComponent<RangedItem>();
+        item.owner = entity;
+        item.Description = "A scroll pulsing with the power of chaotic fire.";
+        item.FlavorMessages.Add(new Message(
+            $"A " + "ball of fire".ColorMe(color) + " hurls out from the scroll at the target", null
+        ));
+
+        item.range = 10;
+        item.radius = 1;
+
+        item.Operations.Add(
+           new ModifyHealthOperation(
+               ScriptableObject.CreateInstance<IntRange>().Init(-10, -16)
+           ));
 
         return entity;
-
     }
 
 }

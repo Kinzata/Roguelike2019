@@ -20,4 +20,5 @@ MonoBehaviour:
   maxEnemiesInRoom: 1
   maxItemsInRoom: 10
   GuaranteeItems:
-  - ConfusionScroll
+  - FireballScroll
+  - LightningScroll

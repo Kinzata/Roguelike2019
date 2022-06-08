@@ -21,10 +21,12 @@ public class GameManager : MonoBehaviour
     [Header("Floor")]
     private GroundMap _groundMap;
 
+
     public LevelDataScriptableObject levelData;
 
     [Header("Systems")]
     private FieldOfViewSystem fovSystem;
+    private MiscMap _miscMap;
 
     [Header("Settings")]
     public float cameraAdjustmentPercent = 0.793f;
@@ -43,6 +45,7 @@ public class GameManager : MonoBehaviour
         _groundMap = levelBuilder.GetGroundMap();
         _entityMap = levelBuilder.GetEntityMap();
         _entityMapBackground = levelBuilder.GetPassiveEntityMap();
+        _miscMap = levelBuilder.GetMiscMap();
         _actors = levelBuilder.GetActors();
 
         var startLocation = levelBuilder.GetStartPosition();
@@ -164,7 +167,7 @@ public class GameManager : MonoBehaviour
 
     public MapDTO GetMapDTO()
     {
-        return new MapDTO { EntityMap = _entityMap, EntityFloorMap = _entityMapBackground, GroundMap = _groundMap };
+        return new MapDTO { EntityMap = _entityMap, EntityFloorMap = _entityMapBackground, GroundMap = _groundMap, MiscMap = _miscMap};
     }
 
     void RunVisibilitySystem()
