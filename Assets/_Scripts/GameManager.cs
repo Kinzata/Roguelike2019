@@ -206,6 +206,11 @@ public class GameManager : MonoBehaviour
 
             HandleMovementKeys();
 
+            if (Input.GetMouseButtonDown(1))
+            {
+                HandleContextSensitiveAction();
+            }
+
             // Wait
             if (Input.GetKeyDown(KeyCode.Keypad5))
             {
@@ -216,7 +221,7 @@ public class GameManager : MonoBehaviour
 
 
             // MoveByPath
-            if (Input.GetKeyDown(KeyCode.M))
+            if (Input.GetKeyDown(KeyCode.M) )
             {
                 var player = currentLevel.GetPlayer();
                 var action = new DeferAction(player.actor, new WalkAlongPathAction(player.actor));
@@ -264,6 +269,35 @@ public class GameManager : MonoBehaviour
                 actor.SetNextAction(_deferredAction);
                 _deferredAction = null;
             }
+        }
+    }
+
+    public void HandleContextSensitiveAction()
+    {
+        var currentDto = currentLevel.GetMapDTO();
+        var cell = MouseUtilities.GetCellPositionAtMousePosition(currentLevel.GetMapDTO().GroundMap);
+        var player = currentLevel.GetPlayer();
+
+        var targetData = new TargetData { targetPosition = cell };
+
+        // Cell Enemy? Attack
+        if( currentDto.EntityMap.GetEntities(cell).Where(e => e != player).Any() )
+        {
+            player.actor.SetNextAction(new MeleeAttackAction(player.actor, targetData));
+        }
+        else if(cell == player.position)
+        {
+            if (currentDto.EntityFloorMap.GetEntities(cell).Where(e => e.gameObject.GetComponent<Item>() != null).Any()) {
+                player.actor.SetNextAction(new PickupItemAction(player.actor));
+            }
+            else
+            {
+                player.actor.SetNextAction(new WaitAction(player.actor));
+            }
+        }
+        else
+        {
+            player.actor.SetNextAction(new DeferAction(player.actor, new WalkAlongPathAction(player.actor)));
         }
     }
 
