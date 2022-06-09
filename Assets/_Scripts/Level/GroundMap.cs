@@ -77,6 +77,19 @@ public class GroundMap : ScriptableObject
             return false;
         }
     }
+
+    public bool isTileExplored(CellPosition pos)
+    {
+        if (isTileValid(pos.x, pos.y))
+        {
+            return tiles[pos.x, pos.y].isExplored;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     public bool isTileValid(int x, int y)
     {
         return x >= 0 && x < tiles.GetLength(0) && y >= 0 && y < tiles.GetLength(1);

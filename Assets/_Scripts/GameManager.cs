@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Settings")]
     public float cameraAdjustmentPercent = 0.793f;
+    private float calculatedCamerageAdjustment = 0;
     public float viewportWidth = 10f;
     public int playerViewDistance = 10;
 
@@ -40,8 +41,9 @@ public class GameManager : MonoBehaviour
 
         currentLevel.SetPlayer(player);
 
+        CalculateCameraAdjustment();
         SetDesiredScreenSize();
-        Camera.main.transform.position = new Vector3(player.position.x + CalculateCameraAdjustment(), player.position.y, Camera.main.transform.position.z);
+        Camera.main.transform.position = new Vector3(player.position.x + calculatedCamerageAdjustment, player.position.y, Camera.main.transform.position.z);
 
         // Setup Systems
         fovSystem = new FieldOfViewSystem(currentLevel.GetMapDTO().GroundMap);
@@ -58,12 +60,31 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        HandleUserInput();
+        var actor = currentLevel.GetActors().ElementAt(_currentActorId);
+        if( actor.entity == currentLevel.GetPlayer())
+        {
+            HandleUserInput();
+            var turnResults = ProcessTurn();
+            ProcessTurnResults(turnResults);
+        }
+        else
+        {
+            for(int i = 1; i <= 5; i++)
+            {
+                actor = currentLevel.GetActors().ElementAt(_currentActorId);
+                if (actor.entity == currentLevel.GetPlayer())
+                {
+                    break;
+                }
+                var turnResults = ProcessTurn();
+                ProcessTurnResults(turnResults);
+            }
+        }
 
-        var turnResults = ProcessTurn();
-        ProcessTurnResults(turnResults);
 
-        currentLevel.Update();
+
+
+        //currentLevel.Update();
     }
 
     ActionResult ProcessTurn()
@@ -83,10 +104,13 @@ public class GameManager : MonoBehaviour
         {
             actionResult = actionToTake.PerformAction(currentLevel.GetMapDTO());
 
-            // Cleanup to handle after player potentially changes position
-            Camera.main.transform.position = new Vector3(player.position.x + CalculateCameraAdjustment(), player.position.y, Camera.main.transform.position.z);
+            if(actor.entity == player)
+            {
+                // Cleanup to handle after player potentially changes position
+                Camera.main.transform.position = new Vector3(player.position.x + calculatedCamerageAdjustment, player.position.y, Camera.main.transform.position.z);
+            }
 
-            if (actionResult.status == ActionResultType.Success || actionResult.status == ActionResultType.TurnDeferred)
+            if (actionResult.status == ActionResultType.Success || actionResult.status == ActionResultType.TurnDeferred || actionResult.status == ActionResultType.RepeatNextTurn)
             {
                 TransitionFrom(_gameState);
                 TransitionTo(actionResult.TransitionToStateOnSuccess);
@@ -96,6 +120,11 @@ public class GameManager : MonoBehaviour
         }
         while (actionResult.NextAction != null && actionResult.status != ActionResultType.TurnDeferred);
 
+        if( actionResult.status == ActionResultType.RepeatNextTurn)
+        {
+            actor.SetNextAction(action);
+            actionResult.status = ActionResultType.Success;
+        }
 
         if (actionResult.status == ActionResultType.Success)
         {
@@ -105,6 +134,10 @@ public class GameManager : MonoBehaviour
                 fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
                 currentLevel.OnTurnSuccess();
             }
+            if( currentLevel.GetActors().ElementAt(_currentActorId).entity == player)
+            {
+                currentLevel.RunVisibilitySystem();
+            }
         }
 
         if (actionResult.status == ActionResultType.TurnDeferred)
@@ -112,7 +145,7 @@ public class GameManager : MonoBehaviour
             _deferredAction = actionToTake;
         }
 
-        currentLevel.RunVisibilitySystem();
+        //currentLevel.RunVisibilitySystem();
 
         return actionResult;
     }
@@ -181,6 +214,15 @@ public class GameManager : MonoBehaviour
                 player.actor.SetNextAction(action);
             }
 
+
+            // MoveByPath
+            if (Input.GetKeyDown(KeyCode.M))
+            {
+                var player = currentLevel.GetPlayer();
+                var action = new DeferAction(player.actor, new WalkAlongPathAction(player.actor));
+                player.actor.SetNextAction(action);
+            }
+
             // Pickup!
             if (Input.GetKeyDown(KeyCode.G))
             {
@@ -205,7 +247,7 @@ public class GameManager : MonoBehaviour
         else if (_gameState == GameState.Global_InventoryMenu )
         {
             if (Input.GetKeyDown(KeyCode.I))
-            { 
+            {
                 TransitionFrom(_gameState);
                 TransitionTo(GameState.Global_LevelScene);
             }
@@ -223,7 +265,6 @@ public class GameManager : MonoBehaviour
                 _deferredAction = null;
             }
         }
-
     }
 
     public void TransitionTo(GameState gameState) {
@@ -299,12 +340,12 @@ public class GameManager : MonoBehaviour
     float CalculateCameraAdjustment()
     {
         var value = 0f;
-
-        float aspect = (float)Screen.width / (float)Screen.height;
         var totalWidth = (float)viewportWidth * 2f / cameraAdjustmentPercent;
         // var screenSize = totalWidth / 2 / aspect;
         value = totalWidth - (viewportWidth * 2f);
 
-        return value / 2;
+        calculatedCamerageAdjustment = value / 2;
+
+        return calculatedCamerageAdjustment;
     }
 }

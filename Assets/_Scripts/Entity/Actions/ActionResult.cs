@@ -8,6 +8,7 @@ public class ActionResult
     public ActionResultType status = ActionResultType.Failure;
     public GameState TransitionToStateOnSuccess = GameState.Unspecified;
     public Action NextAction;
+    
 
 
     public ActionResult()

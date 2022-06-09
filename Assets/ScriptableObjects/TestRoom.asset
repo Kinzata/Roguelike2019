@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mapWidth: 80
   mapHeight: 60
-  roomSizeRange: {fileID: 0}
-  maxRooms: 30
-  minEnemiesInRoom: 3
-  maxEnemiesInRoom: 3
+  roomSizeRange: {fileID: 11400000, guid: 5da2fb13c5f22da4194ac92bdcbcab24, type: 2}
+  maxRooms: 1
+  minEnemiesInRoom: 30
+  maxEnemiesInRoom: 30
   maxItemsInRoom: 2
-  GuaranteeItems: []
+  GuaranteeItems:
+  - ConfusionScroll

@@ -22,15 +22,16 @@ public class BasicMonsterAi : AiBehavior
             // Attempt to move towards the AIs target (this doesn't have to be the player!)
             if (owner.DistanceTo(target) >= 2)
             {
-                var moveTile = aStar.FindPathToTarget((owner.position.x, owner.position.y), (target.position.x, target.position.y));
-                if (moveTile == null)
+                var path = aStar.FindPathToTarget(owner.position, target.position);
+                if (path == null)
                 {
                     // No path found I guess
                     action = BuildWaitAction(actionResult);
                 }
                 else
                 {
-                    action = new WalkAction(owner.actor, new TargetData { targetPosition = new CellPosition(moveTile.x, moveTile.y) });
+                    var tile = path.GetNextTile();
+                    action = new WalkAction(owner.actor, new TargetData { targetPosition = new CellPosition(tile.x, tile.y) });
                 }
             }
             else

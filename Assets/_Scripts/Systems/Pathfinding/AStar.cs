@@ -15,8 +15,7 @@ public class AStar
         this.pathMap = new AStarTile[map.width, map.height];
     }
 
-    // TODO: This should return a path object instead of just the first tile.  Can hold onto it and reuse then.
-    public WorldTile FindPathToTarget((int x, int y) start, (int x, int y) target)
+    public TilePath FindPathToTarget(CellPosition start, CellPosition target)
     {
         List<AStarTile> openNodes = new List<AStarTile>();
         List<AStarTile> closedNodes = new List<AStarTile>();
@@ -24,10 +23,10 @@ public class AStar
         var startTile = new AStarTile
         {
             tile = map.tiles[start.x, start.y],
-            pos = start,
+            pos = (start.x,start.y),
             GCost = 0,
-            HCost = CalculateCost(target, start),
-            FCost = CalculateCost(target, start)
+            HCost = CalculateCost((target.x,target.y), (start.x, start.y)),
+            FCost = CalculateCost((target.x, target.y), (start.x, start.y))
         };
 
         pathMap[startTile.pos.x, startTile.pos.y] = startTile;
@@ -39,27 +38,29 @@ public class AStar
             openNodes.Remove(current);
             closedNodes.Add(current);
 
-            if (current.pos == target)
+            if (current.pos == (target.x, target.y))
             {
-                return current.GetFirstTileInPath().tile;
+                return new TilePath(current);
             }
 
             // Check if tile is blocked on entity map
-            if (current.pos != start)
+            if (current.pos != (start.x, start.y))
             {
                 var blockingEntity = entityMap.GetBlockingEntityAtPosition(current.pos.x, current.pos.y);
                 if (blockingEntity != null) { continue; }
             }
 
+            var tTarget = (target.x, target.y);
+
             // Check each direction for potential path
-            CheckDirection(Navigation.N, current, openNodes, closedNodes, target);
-            CheckDirection(Navigation.NE, current, openNodes, closedNodes, target);
-            CheckDirection(Navigation.E, current, openNodes, closedNodes, target);
-            CheckDirection(Navigation.SE, current, openNodes, closedNodes, target);
-            CheckDirection(Navigation.S, current, openNodes, closedNodes, target);
-            CheckDirection(Navigation.SW, current, openNodes, closedNodes, target);
-            CheckDirection(Navigation.W, current, openNodes, closedNodes, target);
-            CheckDirection(Navigation.NW, current, openNodes, closedNodes, target);
+            CheckDirection(Navigation.N, current, openNodes, closedNodes, tTarget);
+            CheckDirection(Navigation.NE, current, openNodes, closedNodes, tTarget);
+            CheckDirection(Navigation.E, current, openNodes, closedNodes, tTarget);
+            CheckDirection(Navigation.SE, current, openNodes, closedNodes, tTarget);
+            CheckDirection(Navigation.S, current, openNodes, closedNodes, tTarget);
+            CheckDirection(Navigation.SW, current, openNodes, closedNodes, tTarget);
+            CheckDirection(Navigation.W, current, openNodes, closedNodes, tTarget);
+            CheckDirection(Navigation.NW, current, openNodes, closedNodes, tTarget);
         }
 
         // No solution
@@ -168,6 +169,46 @@ public class AStarTile
             tile = parent;
             parent = tile.parent;
         }
+
+        return tile;
+    }
+}
+
+public class TilePath
+{
+    public IEnumerable<WorldTile> tiles;
+    private IEnumerator<WorldTile> _i;
+
+    public TilePath(AStarTile targetTile)
+    {
+        tiles = BuildPathFromTile(targetTile);
+        _i = tiles.GetEnumerator();
+    }
+
+    public List<WorldTile> BuildPathFromTile(AStarTile targetTile)
+    {
+        var path = new List<WorldTile>();
+
+        var tile = targetTile;
+        var parent = tile.parent;
+
+        path.Add(tile.tile);
+
+        while (parent != null && parent.parent != null)
+        {
+            tile = parent;
+            parent = tile.parent;
+            path.Add(tile.tile);
+        }
+
+        path.Reverse();
+        return path;
+    }
+
+    public WorldTile GetNextTile()
+    {
+        _i.MoveNext();
+        var tile = _i.Current;
 
         return tile;
     }

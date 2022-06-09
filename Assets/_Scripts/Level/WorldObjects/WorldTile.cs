@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Tilemaps;
 
 public class WorldTile : Tile
@@ -11,6 +9,8 @@ public class WorldTile : Tile
     public bool blockSight;
     public bool isVisible;
     public bool isExplored;
+
+    public CellPosition position { get { return new CellPosition(x, y); }}
 
     public float darkTileModifier = .3f;
 

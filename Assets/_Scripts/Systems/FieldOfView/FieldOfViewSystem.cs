@@ -12,7 +12,7 @@ public class FieldOfViewSystem {
     }
 
     public void Run(Vector2Int origin, int sightLimit) {
-        var levelPoint = new LevelPoint{X = (uint)origin.x, Y = (uint)origin.y };
+        var levelPoint = new LevelPoint{ X = (uint)origin.x, Y = (uint)origin.y };
         map.ClearVisibility();
         fovComputer.Compute(levelPoint, sightLimit);
     }
