@@ -60,6 +60,11 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
+        if( _gameState == GameState.Global_PlayerDead)
+        {
+            // Enable Game over screen or change states
+        }
+
         var actor = currentLevel.GetActors().ElementAt(_currentActorId);
         if( actor.entity == currentLevel.GetPlayer())
         {
@@ -246,6 +251,15 @@ public class GameManager : MonoBehaviour
                 _log.AddMessage(new Message($"{currentLevel.GetPlayer().actor.entity.GetColoredName()} opens their inventory...", null));
                 var result = inventoryInterface.DescribeInventory();
                 ProcessTurnResults(result);
+            }
+
+            // Quit
+            if( Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.BackQuote))
+            {
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+#endif
+                Application.Quit();
             }
         }
 
