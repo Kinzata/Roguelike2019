@@ -21,11 +21,9 @@ public class MeleeAttackAction : Action
             result.Append(fighterComponent.Attack(targets.FirstOrDefault()));
             result.status = ActionResultType.Success;
 
-            //if( mapData.EntityMap.GetPlayer().actor == actor)
-            //{
-                actor.entity.lerpTo = targets.FirstOrDefault().position.ToVector3();
-                actor.entity.enableLerp = true;
-            //}
+            var lerpComponent = actor.entity.gameObject.AddComponent(typeof(LerpEntity)) as LerpEntity;
+            lerpComponent.entity = actor.entity;
+            lerpComponent.lerpTo = targets.FirstOrDefault().position.ToVector3();
         }
         else
         {
