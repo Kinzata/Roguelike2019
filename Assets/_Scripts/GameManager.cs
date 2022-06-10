@@ -145,7 +145,7 @@ public class GameManager : MonoBehaviour
             _deferredAction = actionToTake;
         }
 
-        //currentLevel.RunVisibilitySystem();
+        currentLevel.RunVisibilitySystem();
 
         return actionResult;
     }
@@ -263,6 +263,7 @@ public class GameManager : MonoBehaviour
         }
         else if ( _gameState == GameState.Global_ActionHandlerDeferred)
         {
+            if( _deferredAction == null ) { _gameState = GameState.Global_LevelScene; return; }
             if(_deferredAction.UpdateHandler(currentLevel.GetMapDTO()))
             {
                 var actor = currentLevel.GetActors().ElementAt(_currentActorId);

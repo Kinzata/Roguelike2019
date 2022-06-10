@@ -48,6 +48,8 @@ public class SpriteLoader : MonoBehaviour
                 return spriteSheet[479];
             case SpriteType.Remains_Skull:
                 return spriteSheet[479];
+            case SpriteType.Misc_Target_Dot:
+                return spriteSheet[666];
             case SpriteType.Item_Potion_Full:
                 return spriteSheet[815];
             case SpriteType.Item_Potion_Empty:

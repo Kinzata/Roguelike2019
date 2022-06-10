@@ -67,6 +67,10 @@ public class WalkAlongPathAction : Action
         var dx = target.x - actor.entity.position.x;
         var dy = target.y - actor.entity.position.y;
         var distance = (int)Mathf.Sqrt(dx * dx + dy * dy);
+        if( distance == 0 )
+        {
+            return false;
+        }
 
         dx = dx / distance;
         dy = dy / distance;
@@ -87,16 +91,18 @@ public class WalkAlongPathAction : Action
     {
         var cell = MouseUtilities.GetCellPositionAtMousePosition(mapData.GroundMap);
         
-        if( mapData.GroundMap.isTileExplored(cell) && !mapData.GroundMap.IsBlocked(cell.x, cell.y))
+        if( mapData.GroundMap.isTileExplored(cell) && !mapData.GroundMap.IsBlocked(cell.x, cell.y) && cell != actor.entity.position)
         {
             var aStar = new AStar(mapData.GroundMap, mapData.EntityMap);
             _path = aStar.FindPathToTarget(actor.entity.position, cell);
 
-            mapData.MiscMap.TargetTilesInRadius(cell.x, cell.y, 0);
+            
             foreach (var tile in _path.tiles)
             {
-                mapData.MiscMap.TargetTilesInRadius(tile.x, tile.y, 0);
+                mapData.MiscMap.TargetTile(tile.x, tile.y, SpriteType.Misc_Target_Dot);
             }
+
+            mapData.MiscMap.TargetTile(cell.x, cell.y, SpriteType.Misc_Target_One);
 
             mapData.MiscMap.UpdateTiles();
 

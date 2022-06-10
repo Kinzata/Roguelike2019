@@ -17,6 +17,13 @@ public class Entity : MonoBehaviour
     public SpriteRenderer spriteRenderer;
     public bool blocks;
 
+    public bool enableLerp;
+    public Vector3 lerpFrom;
+    public Vector3 lerpTo;
+    private bool _reverseLerp = false;
+    private int _elapsedLerpFrames = 0;
+    private int _lerpMaxFrames = 8;
+
     public static Entity CreateEntity(){
         var obj = new GameObject();
         var entity = obj.AddComponent<Entity>();
@@ -39,6 +46,39 @@ public class Entity : MonoBehaviour
         spriteRenderer.color = this.color;
         
         return this;
+    }
+
+    void Update()
+    {
+        // Lerp!
+        if(enableLerp)
+        {
+            if (!_reverseLerp && _elapsedLerpFrames == 0)
+            {
+                lerpFrom = position.ToVector3Int();
+     
+                lerpTo = lerpFrom + (lerpTo - lerpFrom) / 2;
+            }
+
+            float interpolationRatio = (float)_elapsedLerpFrames / _lerpMaxFrames;
+
+            Vector3 interpolatedPosition = Vector3.Lerp(lerpFrom, lerpTo, interpolationRatio);
+
+            _elapsedLerpFrames++;
+            if (_elapsedLerpFrames >= _lerpMaxFrames)
+            {
+                if (_reverseLerp)
+                {
+                    enableLerp = false;
+                    interpolatedPosition = position.ToVector3Int();
+                }
+                lerpFrom = lerpTo;
+                lerpTo = position.ToVector3Int();
+                _reverseLerp = !_reverseLerp;
+                _elapsedLerpFrames = 0;
+            }
+            transform.position = interpolatedPosition;
+        }
     }
 
     public void SetActor(Actor actor)

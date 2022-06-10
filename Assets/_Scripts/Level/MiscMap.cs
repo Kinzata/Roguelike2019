@@ -10,6 +10,7 @@ public class MiscMap : ScriptableObject
 
     public Sprite targetSprite;
     public List<TileWithPosition> targetedTiles;
+    public Color color = new Color32(255, 255, 40, 200);
 
     public MiscMap Init(int width, int height, Tilemap map)
     {
@@ -40,23 +41,44 @@ public class MiscMap : ScriptableObject
         ClearTargets();
     }
 
-    public void TargetTile(int x, int y)
+    public void TargetTile(int x, int y,  Color32 color, SpriteType sprite = SpriteType.Misc_Target_One)
     {
         var tile = CreateInstance<TileWithPosition>();
         tile.x = x;
         tile.y = y;
-        tile.sprite = targetSprite;
-        tile.color = new Color32(255, 255, 40, 200);
+        tile.sprite = SpriteLoader.instance.LoadSprite(sprite);
+        tile.color = color;
         targetedTiles.Add(tile);
     }
 
-    public void TargetTilesInRadius(int x, int y, int radius)
+    public void TargetTile(int x, int y, SpriteType sprite = SpriteType.Misc_Target_One)
+    {
+        TargetTile(x, y, new Color32(255, 255, 40, 200), sprite);
+    }
+
+    public void TargetTile(int x, int y)
+    {
+        TargetTile(x, y, new Color32(255, 255, 40, 200));
+    }
+
+    public void TargetTilesInRadius(int x, int y, int radius, Color32 color, SpriteType sprite = SpriteType.Misc_Target_One)
     {
         for (int i = x-radius; i <= x+radius; i++)
         {
             for (int j = y-radius; j <= y+radius; j++)
             {
-                TargetTile(i, j);
+                TargetTile(i, j, color, sprite);
+            }
+        }
+    }
+
+    public void TargetTilesInRadius(int x, int y, int radius, SpriteType sprite = SpriteType.Misc_Target_One)
+    {
+        for (int i = x - radius; i <= x + radius; i++)
+        {
+            for (int j = y - radius; j <= y + radius; j++)
+            {
+                TargetTile(i, j, sprite);
             }
         }
     }

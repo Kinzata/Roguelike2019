@@ -25,16 +25,25 @@ public class RangedTargetAction : Action
     public override bool UpdateHandler(MapDTO mapData)
     {
         var cell = MouseUtilities.GetCellPositionAtMousePosition(mapData.GroundMap);
-        mapData.MiscMap.TargetTilesInRadius(cell.x, cell.y, targetData.radius);
-        mapData.MiscMap.UpdateTiles();
 
-        if (Input.GetMouseButtonDown(0))
+        if (mapData.GroundMap.isTileExplored(cell) && !mapData.GroundMap.IsBlocked(cell.x, cell.y))
         {
-            targetData.targetPosition = MouseUtilities.GetCellPositionAtMousePosition(mapData.GroundMap);
-            mapData.MiscMap.ClearTargets();
+            mapData.MiscMap.TargetTilesInRadius(cell.x, cell.y, targetData.radius);
             mapData.MiscMap.UpdateTiles();
-            return true;
+            if (Input.GetMouseButtonDown(0))
+            {
+                targetData.targetPosition = MouseUtilities.GetCellPositionAtMousePosition(mapData.GroundMap);
+                mapData.MiscMap.ClearTargets();
+                mapData.MiscMap.UpdateTiles();
+                return true;
+            }
         }
+        else
+        {
+            mapData.MiscMap.TargetTilesInRadius(cell.x, cell.y, targetData.radius, Color.red);
+            mapData.MiscMap.UpdateTiles();
+        }
+
         return false;
     }
 }

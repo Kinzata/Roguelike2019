@@ -12,6 +12,7 @@ public enum SpriteType{
     Item_Potion_Empty,
     Item_Scroll_One,
     Item_Scroll_Two,
-    Misc_Target_One
+    Misc_Target_One,
+    Misc_Target_Dot
 
 }

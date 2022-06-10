@@ -24,6 +24,11 @@ public class CellPosition
         return new Vector3Int(x, y, 0);
     }
 
+    public Vector3 ToVector3()
+    {
+        return new Vector3(x, y, 0);
+    }
+
     public override bool Equals(object obj)
     {
         if( obj == null ) { return false; }
