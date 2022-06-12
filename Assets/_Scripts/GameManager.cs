@@ -30,6 +30,13 @@ public class GameManager : MonoBehaviour
         Application.targetFrameRate = 120;
         QualitySettings.vSyncCount = 0;
 
+        // Should load a save file?
+        var saveFileString = GameSceneManager.Instance.SaveFile;
+        if( !string.IsNullOrWhiteSpace(saveFileString) )
+        {
+            // Load game
+        }
+
         currentLevel = new Level();
         currentLevel.BuildLevel(levelData);
 
@@ -253,13 +260,10 @@ public class GameManager : MonoBehaviour
                 ProcessTurnResults(result);
             }
 
-            // Quit
+            // Back to main menu
             if( Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.BackQuote))
             {
-#if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
-#endif
-                Application.Quit();
+                GameSceneManager.Instance.MainMenu();
             }
         }
 
