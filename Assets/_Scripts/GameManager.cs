@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
         var saveFileString = GameSceneManager.Instance.SaveFile;
         if( !string.IsNullOrWhiteSpace(saveFileString) )
         {
-            // Load game
+            LoadGameState(saveFileString);
         }
         else
         {
@@ -434,6 +434,38 @@ public class GameManager : MonoBehaviour
         File.WriteAllText(location, Newtonsoft.Json.JsonConvert.SerializeObject(saveData, formatting: Newtonsoft.Json.Formatting.Indented));
 
         Debug.Log("Saved!");
+    }
+
+    public void LoadGameState(string saveFileLocation)
+    {
+        Debug.Log(saveFileLocation);
+
+        var fileContents = File.ReadAllText(saveFileLocation);
+
+        var data = Newtonsoft.Json.JsonConvert.DeserializeObject<SaveData>(fileContents);
+
+        currentLevel = new Level();
+        currentLevel.LoadGameState(data.currentLevel, levelData);
+
+        var player = currentLevel.GetPlayer();
+
+        CalculateCameraAdjustment();
+        SetDesiredScreenSize();
+        Camera.main.transform.position = new Vector3(player.position.x + calculatedCamerageAdjustment, player.position.y, Camera.main.transform.position.z);
+
+        // Setup Systems
+        fovSystem = new FieldOfViewSystem(currentLevel.GetMapDTO().GroundMap);
+        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
+
+        statText.SetPlayer(player);
+        inventoryInterface.SetInventory(player.GetComponent<Inventory>());
+
+        _gameState = GameState.Global_LevelScene;
+        _log = FindObjectOfType<MessageLog>();
+
+        currentLevel.FinalSetup();
+
+        Debug.Log("Loaded!");
     }
 
     private class SaveData

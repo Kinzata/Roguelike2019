@@ -5,6 +5,8 @@ using System.Linq;
 [Serializable]
 public class Level
 {
+    public string seed;
+
     // Maps
     public EntityMap _entityMap;
     public EntityMap _entityMapBackground;
@@ -24,11 +26,22 @@ public class Level
 
     }
 
-    public Level BuildLevel(LevelDataScriptableObject levelData)
+    public Level BuildLevel(LevelDataScriptableObject levelData, string seed = "")
     {
+        if (string.IsNullOrWhiteSpace(seed))
+        {
+            seed = DateTime.UtcNow.Ticks.ToString();
+        }
+
+        this.seed = seed;
+
+        var ranGen = new Random(seed.GetHashCode());
+
         var levelBuilder = new LevelBuilder();
         this.levelData = levelData;
-        levelBuilder.Generate(levelData);
+
+        levelBuilder.GenerateMap(levelData, ranGen);
+        levelBuilder.GenerateEntities(levelData, ranGen);
 
         _groundMap = levelBuilder.GetGroundMap();
         _entityMap = levelBuilder.GetEntityMap();
@@ -111,6 +124,7 @@ public class Level
     {
         var saveData = new SaveData
         {
+            seed = seed,
             playerIndexInActors = _actors.FindIndex((a) => a == _player.actor),
             actors = _actors.Select(a => a.SaveGameState()).ToList(),
             items = _entityMapBackground.GetEntities().Select(e => e.SaveGameState()).ToList()
@@ -119,9 +133,44 @@ public class Level
         return saveData;
     }
 
+    public void LoadGameState(SaveData data, LevelDataScriptableObject levelData)
+    {
+        var ranGen = new Random(data.seed.GetHashCode());
+
+        var levelBuilder = new LevelBuilder();
+        this.levelData = levelData;
+        levelBuilder.GenerateMap(levelData, ranGen);
+
+        _groundMap = levelBuilder.GetGroundMap();
+        _entityMap = levelBuilder.GetEntityMap();
+        _entityMapBackground = levelBuilder.GetPassiveEntityMap();
+        _miscMap = levelBuilder.GetMiscMap();
+
+        var dto = GetMapDTO();
+
+        // Load Actors and Items
+        var loadedActors = data.actors.Select(a => Actor.LoadGameState(a)).ToList();
+        foreach(var a in loadedActors)
+        {
+            _entityMap.AddEntity(a.entity);
+        }
+        _actors = loadedActors;
+
+        var loadedItems = data.items.Select(e => Entity.LoadGameState(e)).ToList();
+        foreach (var a in loadedItems)
+        {
+            _entityMapBackground.AddEntity(a);
+        }
+
+        _player = _actors[data.playerIndexInActors].entity;
+
+        RunVisibilitySystem();
+    }
+
     [Serializable]
     public class SaveData
     {
+        public string seed;
         public int playerIndexInActors;
         public List<Actor.SaveData> actors;
         public List<Entity.SaveData> items;

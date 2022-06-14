@@ -1,4 +1,5 @@
 
+using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
@@ -8,6 +9,7 @@ public class CellPosition
     public int x;
     public int y;
 
+    [JsonConstructor]
     public CellPosition(int x, int y)
     {
         this.x = x;

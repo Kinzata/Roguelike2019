@@ -12,7 +12,8 @@ public class IntRange : ScriptableObject {
         return this;
     }
 
-    public int RandomValue(){
-        return Random.Range(min, max + 1);
+    public int RandomValue(System.Random ranGen)
+    {
+        return ranGen.Next(min, max + 1);
     }
 }

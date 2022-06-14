@@ -151,12 +151,24 @@ public class Entity : MonoBehaviour
             name = name,
             position = position,
             blocks = blocks,
-            color = color.ToString(),
+            color = "#" + ColorUtility.ToHtmlStringRGBA(color),
             spriteType = _spriteType,
             components = GetComponents<EntityComponent>().ToDictionary(o => o.componentName, o => o.SaveGameState()) 
         };
 
         return saveData;
+    }
+
+    public static Entity LoadGameState(SaveData data)
+    {
+        var entity = CreateEntity();
+        Color loadedColor;
+        ColorUtility.TryParseHtmlString(data.color, out loadedColor);
+        entity.Init(data.position, data.spriteType, loadedColor, data.blocks, data.name);
+
+        // Load components
+
+        return entity;
     }
 
     [Serializable]

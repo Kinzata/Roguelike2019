@@ -11,31 +11,35 @@ public class LevelBuilder
     public MiscMap miscMap;
     public List<Actor> actors;
 
-    public void Generate(LevelDataScriptableObject data)
+    public void GenerateMap(LevelDataScriptableObject data, System.Random ranGen)
     {
-        actors = new List<Actor>();
-
-        MakeMap(data);
+        MakeMap(data, ranGen);
 
         var entityTileMap = GameObject.Find(TileMapType.EntityMap.Name()).GetComponent<Tilemap>();
         entityMap = new EntityMap().Init(entityTileMap, groundMap);
 
-        MakeEntities(data, entityMap);
-
         var entityBackgroundTileMap = GameObject.Find(TileMapType.EntityMap_Background.Name()).GetComponent<Tilemap>();
         passiveEntityMap = new EntityMap().Init(entityBackgroundTileMap, groundMap);
-
-        MakePassiveEntities(data, passiveEntityMap);
-
+        
         MakeMiscMap(data);
     }
 
-    public void MakeMap(LevelDataScriptableObject data)
+    public void GenerateEntities(LevelDataScriptableObject data, System.Random ranGen)
+    {
+        actors = new List<Actor>();
+
+        // TODO: Seeded entities
+
+        MakeEntities(data, entityMap);
+        MakePassiveEntities(data, passiveEntityMap);
+    }
+
+    public void MakeMap(LevelDataScriptableObject data, System.Random ranGen)
     {
         var groundTileMap = GameObject.Find(TileMapType.GroundMap.Name()).GetComponent<Tilemap>();
         groundMap = new GroundMap().Init(data.mapWidth, data.mapHeight, groundTileMap);
 
-        var rooms = MakeRooms(data.maxRooms, data.roomSizeRange, data.mapWidth, data.mapHeight, groundTileMap);
+        var rooms = MakeRooms(data.maxRooms, data.roomSizeRange, data.mapWidth, data.mapHeight, ranGen);
         groundMap.rooms = rooms.ToList();
         groundMap.UpdateNavigationMasks();
         Debug.Log("Rooms: " + rooms.Count());
@@ -92,7 +96,7 @@ public class LevelBuilder
         return actors;
     }
 
-    private IList<Room> MakeRooms(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight, Tilemap tileMap)
+    private IList<Room> MakeRooms(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight, System.Random ranGen)
     {
         var rooms = new List<Room>();
         var counter = 0;
@@ -100,11 +104,11 @@ public class LevelBuilder
 
         while (counter++ < maxRooms)
         {
-            var width = roomSizeRange.RandomValue();
-            var height = roomSizeRange.RandomValue();
+            var width = roomSizeRange.RandomValue(ranGen);
+            var height = roomSizeRange.RandomValue(ranGen);
 
-            var x = Random.Range(0, mapWidth - width - 1);
-            var y = Random.Range(0, mapHeight - height - 1);
+            var x = ranGen.Next(0, mapWidth - width - 1);
+            var y = ranGen.Next(0, mapHeight - height - 1);
 
             var rect = new Rect(x, y, width, height);
             var newRoom = new Room(rect, groundMap);
@@ -121,7 +125,7 @@ public class LevelBuilder
             if (rooms.Count != 0)
             {
                 var prevCenter = rooms.ElementAt(roomCounter - 1).center;
-                if (Random.value >= .5f)
+                if (ranGen.NextDouble() >= .5f)
                 {
                     CreateHorizontalTunnel(prevCenter.x, newRoom.center.x, prevCenter.y);
                     CreateVerticalTunnel(prevCenter.y, newRoom.center.y, newRoom.center.x);

@@ -46,6 +46,14 @@ public class Actor
         return saveData;
     }
 
+    public static Actor LoadGameState(SaveData data)
+    {
+        var loadedEntity = Entity.LoadGameState(data.entity);
+        var actor = new Actor(loadedEntity);
+
+        return actor;
+    }
+
     [Serializable]
     public class SaveData
     {

@@ -31,7 +31,7 @@ public class ModifyHealthOperation : Operation
                 return result;
             }
 
-            var modifierAmount = ModifierRange.RandomValue();
+            var modifierAmount = ModifierRange.RandomValue(new System.Random());
 
             if (modifierAmount >= 0)
             {

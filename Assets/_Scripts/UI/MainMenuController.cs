@@ -9,7 +9,8 @@ public class MainMenuController : MonoBehaviour
 
     public void LoadGame()
     {
-        GameSceneManager.Instance.LoadGame("");
+        var file = Application.persistentDataPath + "/roguelike_save_data.json";
+        GameSceneManager.Instance.LoadGame(file);
     }
 
     public void QuitGame()
