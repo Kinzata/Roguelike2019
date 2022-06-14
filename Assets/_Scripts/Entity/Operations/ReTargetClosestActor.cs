@@ -4,6 +4,11 @@ using System.Linq;
 
 public class ReTargetClosestActorOperation : Operation
 {
+    public ReTargetClosestActorOperation()
+    {
+        name = "ReTargetClosestActorOperation";
+    }
+
     public override OperationResult Occur(Entity entity, MapDTO mapData, TargetData targetData)
     {
         var scriptTarget = entity;
@@ -23,5 +28,10 @@ public class ReTargetClosestActorOperation : Operation
         result.newTargetData = targetData;
 
         return result;
+    }
+
+    public override object SaveGameState()
+    {
+        return null;
     }
 }

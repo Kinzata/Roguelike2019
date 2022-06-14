@@ -1,10 +1,10 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class GroundMap : ScriptableObject
+[Serializable]
+public class GroundMap
 {
     public int width;
     public int height;

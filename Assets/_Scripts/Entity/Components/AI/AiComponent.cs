@@ -1,7 +1,17 @@
-﻿public class AiComponent : EntityComponent
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using UnityEngine;
+
+public class AiComponent : EntityComponent
 {
     public AiBehavior behavior;
     public AiBehavior previousBehavior;
+
+    void Start()
+    {
+        componentName = "AiComponent";    
+    }
 
     public ActionResult AssignBehavior(AiBehavior behavior)
     {
@@ -27,5 +37,20 @@
     {
         if( behavior == null) { return null; }
         return behavior.GetAction(mapDto);
+    }
+
+    public override object SaveGameState()
+    {
+        return new SaveData
+        {
+            behavior = new Dictionary<string, object>() { { behavior.name, behavior.SaveGameState() } },
+            previousBehavior = new Dictionary<string, object>() { { previousBehavior?.name ?? "None", previousBehavior?.SaveGameState() } }
+        };
+    }
+
+    public class SaveData
+    {
+        public Dictionary<string,object> behavior;
+        public Dictionary<string, object> previousBehavior;
     }
 }

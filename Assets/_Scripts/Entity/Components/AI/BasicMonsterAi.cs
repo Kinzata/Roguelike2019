@@ -1,5 +1,7 @@
 public class BasicMonsterAi : AiBehavior
 {
+    public override string name => "BasicMonsterAi";
+
     public override Action GetAction(MapDTO mapDto)
     {
         var groundMap = mapDto.GroundMap;
@@ -67,5 +69,10 @@ public class BasicMonsterAi : AiBehavior
         actionResult.status = ActionResultType.Success;
         action.SetActionResult(actionResult);
         return action;
+    }
+
+    public override object SaveGameState()
+    {
+        return null;
     }
 }

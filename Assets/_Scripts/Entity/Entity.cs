@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -8,14 +10,17 @@ The Entity is just that, an entity.
 
 It has a position, sprite, color and knows how to update it's position
  */
+[Serializable]
 public class Entity : MonoBehaviour
 {
     public Actor actor;
-    public CellPosition position;
     public Sprite sprite;
-    public Color color;
     public SpriteRenderer spriteRenderer;
+    
+    public CellPosition position;
     public bool blocks;
+    public Color color;
+    private SpriteType _spriteType;
 
     public static Entity CreateEntity(){
         var obj = new GameObject();
@@ -34,6 +39,8 @@ public class Entity : MonoBehaviour
         this.color = color ?? Color.magenta;
         this.blocks = blocks;
         this.name = name;
+
+        this._spriteType = spriteType;
 
         spriteRenderer.sprite = this.sprite;
         spriteRenderer.color = this.color;
@@ -106,7 +113,6 @@ public class Entity : MonoBehaviour
         name = $"remains of {name.ToPronoun()}";
         blocks = false;
 
-
         // Probably a better way to do this
         // Common method on EntityComponent?
         // This exists because the game object remains.  We are turning it into a corpse.  But we don't want
@@ -136,5 +142,31 @@ public class Entity : MonoBehaviour
     public CellPosition SetPosition(CellPosition cell)
     {
         return SetPosition(cell.x, cell.y);
+    }
+
+    public SaveData SaveGameState()
+    {
+        var saveData = new SaveData
+        {
+            name = name,
+            position = position,
+            blocks = blocks,
+            color = color.ToString(),
+            spriteType = _spriteType,
+            components = GetComponents<EntityComponent>().ToDictionary(o => o.componentName, o => o.SaveGameState()) 
+        };
+
+        return saveData;
+    }
+
+    [Serializable]
+    public class SaveData
+    {
+        public string name;
+        public CellPosition position;
+        public bool blocks;
+        public string color;
+        public SpriteType spriteType;
+        public Dictionary<string,object> components;
     }
 }

@@ -1,3 +1,7 @@
+using System;
+using UnityEngine;
+
+[Serializable]
 public class Actor
 {
     public Entity entity;
@@ -30,5 +34,21 @@ public class Actor
         nextAction = null;
 
         return action;
+    }
+
+    public SaveData SaveGameState()
+    {
+        var saveData = new SaveData
+        {
+            entity = entity.SaveGameState()
+        };
+
+        return saveData;
+    }
+
+    [Serializable]
+    public class SaveData
+    {
+        public Entity.SaveData entity;
     }
 }

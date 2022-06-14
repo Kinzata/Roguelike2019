@@ -19,6 +19,8 @@ public class DropItemAction : Action
             _item.owner.gameObject.SetActive(true);
             _item.owner.SetPosition(actor.entity.position.Clone());
 
+            mapData.EntityFloorMap.AddEntity(_item.owner);
+
             inventoryComponent.RemoveItem(_item);
 
             result.AppendMessage(new Message($"{actor.entity.GetColoredName()} drops {_item.owner.GetColoredName()}.", null));

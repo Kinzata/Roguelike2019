@@ -14,6 +14,21 @@ public class Message
         this.color = color ?? Color.white;
         this.text = text;
     }
+
+    public SaveData SaveGameState()
+    {
+        return new SaveData
+        {
+            text = text,
+            color = color.ToString(),
+        };
+    }
+
+    public class SaveData
+    {
+        public string text;
+        public string color;
+    }
 }
 
 public class MessageLog : MonoBehaviour

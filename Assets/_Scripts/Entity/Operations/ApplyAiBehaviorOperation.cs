@@ -10,6 +10,7 @@ public class ApplyAiBehavorOperation : Operation
 
     public ApplyAiBehavorOperation(AiBehavior behavior)
     {
+        name = "ApplyAiBehavorOperation";
         behaviorToApply = behavior;
     }
 
@@ -43,5 +44,20 @@ public class ApplyAiBehavorOperation : Operation
         result.ActionResult = requiredComponent.AssignBehavior(behaviorToApply);
 
         return result;
+    }
+
+    public override object SaveGameState()
+    {
+        return new SaveData
+        {
+            behaviorToApply = new Dictionary<string, object>() { { behaviorToApply.name, behaviorToApply.SaveGameState() } },
+            messages = flavorMessages.Select(m => m.SaveGameState()).ToList(),
+        };
+    }
+
+    public class SaveData
+    {
+        public Dictionary<string, object> behaviorToApply;
+        public List<Message.SaveData> messages;
     }
 }

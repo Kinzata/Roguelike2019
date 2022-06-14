@@ -3,6 +3,7 @@ using UnityEngine;
 public class ConfusedAi : AiBehavior
 {
     public int turnLimit;
+    public override string name => "ConfusedAi";
 
     public ConfusedAi(int turnLimit)
     {
@@ -58,5 +59,18 @@ public class ConfusedAi : AiBehavior
         actionResult.status = ActionResultType.Success;
         action.SetActionResult(actionResult);
         return action;
+    }
+
+    public override object SaveGameState()
+    {
+        return new SaveData
+        {
+            turnLimit = turnLimit
+        };
+    }
+
+    public class SaveData
+    {
+        public int turnLimit;
     }
 }

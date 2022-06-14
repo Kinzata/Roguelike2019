@@ -18,12 +18,12 @@ public class LevelBuilder
         MakeMap(data);
 
         var entityTileMap = GameObject.Find(TileMapType.EntityMap.Name()).GetComponent<Tilemap>();
-        entityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityTileMap, groundMap);
+        entityMap = new EntityMap().Init(entityTileMap, groundMap);
 
         MakeEntities(data, entityMap);
 
         var entityBackgroundTileMap = GameObject.Find(TileMapType.EntityMap_Background.Name()).GetComponent<Tilemap>();
-        passiveEntityMap = ScriptableObject.CreateInstance<EntityMap>().Init(entityBackgroundTileMap, groundMap);
+        passiveEntityMap = new EntityMap().Init(entityBackgroundTileMap, groundMap);
 
         MakePassiveEntities(data, passiveEntityMap);
 
@@ -33,7 +33,7 @@ public class LevelBuilder
     public void MakeMap(LevelDataScriptableObject data)
     {
         var groundTileMap = GameObject.Find(TileMapType.GroundMap.Name()).GetComponent<Tilemap>();
-        groundMap = ScriptableObject.CreateInstance<GroundMap>().Init(data.mapWidth, data.mapHeight, groundTileMap);
+        groundMap = new GroundMap().Init(data.mapWidth, data.mapHeight, groundTileMap);
 
         var rooms = MakeRooms(data.maxRooms, data.roomSizeRange, data.mapWidth, data.mapHeight, groundTileMap);
         groundMap.rooms = rooms.ToList();
@@ -64,7 +64,7 @@ public class LevelBuilder
     public void MakeMiscMap(LevelDataScriptableObject data)
     {
         var miscTileMap = GameObject.Find(TileMapType.MiscMap.Name()).GetComponent<Tilemap>();
-        miscMap = ScriptableObject.CreateInstance<MiscMap>().Init(data.mapWidth, data.mapHeight, miscTileMap);
+        miscMap = new MiscMap().Init(data.mapWidth, data.mapHeight, miscTileMap);
     }
 
     public GroundMap GetGroundMap()
@@ -381,7 +381,7 @@ public class LevelBuilder
             name: name
         );
 
-        var item = entity.gameObject.AddComponent<RangedItem>();
+        var item = entity.gameObject.AddComponent<Item>();
         item.owner = entity;
         item.Description = "A scroll pulsing with the power of electricity.";
         item.FlavorMessages.Add(new Message(
@@ -417,7 +417,7 @@ public class LevelBuilder
             name: name
         );
 
-        var item = entity.gameObject.AddComponent<RangedItem>();
+        var item = entity.gameObject.AddComponent<Item>();
         item.owner = entity;
         item.Description = "A scroll pulsing with the power of purple dust.";
         item.FlavorMessages.Add(new Message(
@@ -467,7 +467,7 @@ public class LevelBuilder
             name: name
         );
 
-        var item = entity.gameObject.AddComponent<RangedItem>();
+        var item = entity.gameObject.AddComponent<Item>();
         item.owner = entity;
         item.Description = "A scroll pulsing with the power of chaotic fire.";
         item.FlavorMessages.Add(new Message(

@@ -1,11 +1,14 @@
-using UnityEngine;
-
 public class Fighter : EntityComponent
 {
     public int maxHp;
     public int hp;
     public int defensePower;
     public int offensePower;
+
+    void Start()
+    {
+        componentName = "Fighter";
+    }
 
     public Fighter Init(int maxHp, int defensePower, int offensePower)
     {
@@ -65,5 +68,24 @@ public class Fighter : EntityComponent
         }
 
         return actionResult;
+    }
+
+    public override object SaveGameState()
+    {
+        return new SaveData
+        {
+            maxHp = maxHp,
+            hp = hp,
+            defensePower = defensePower,
+            offensePower = offensePower
+        };
+    }
+
+    public class SaveData
+    {
+        public int maxHp;
+        public int hp;
+        public int defensePower;
+        public int offensePower;
     }
 }

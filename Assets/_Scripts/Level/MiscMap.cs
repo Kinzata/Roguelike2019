@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class MiscMap : ScriptableObject
+[Serializable]
+public class MiscMap
 {
     public int width;
     public int height;
@@ -43,7 +45,7 @@ public class MiscMap : ScriptableObject
 
     public void TargetTile(int x, int y,  Color32 color, SpriteType sprite = SpriteType.Misc_Target_One)
     {
-        var tile = CreateInstance<TileWithPosition>();
+        var tile = ScriptableObject.CreateInstance<TileWithPosition>();
         tile.x = x;
         tile.y = y;
         tile.sprite = SpriteLoader.instance.LoadSprite(sprite);

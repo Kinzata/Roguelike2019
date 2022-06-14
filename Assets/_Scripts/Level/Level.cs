@@ -1,20 +1,21 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
+[Serializable]
 public class Level
 {
     // Maps
-    private EntityMap _entityMap;
-    private EntityMap _entityMapBackground;
-    private GroundMap _groundMap;
-    private MiscMap _miscMap;
+    public EntityMap _entityMap;
+    public EntityMap _entityMapBackground;
+    public GroundMap _groundMap;
+    public MiscMap _miscMap;
 
     // Actors
-    private List<Actor> _actors;
-    private Entity _player;
+    public List<Actor> _actors;
+    public Entity _player;
 
+    [NonSerialized]
     public LevelDataScriptableObject levelData;
 
     public void Update()
@@ -103,6 +104,26 @@ public class Level
             _actors.Remove(dead.actor);
         }
         return actionResult;
-        
+    }
+
+
+    public SaveData SaveGameState()
+    {
+        var saveData = new SaveData
+        {
+            playerIndexInActors = _actors.FindIndex((a) => a == _player.actor),
+            actors = _actors.Select(a => a.SaveGameState()).ToList(),
+            items = _entityMapBackground.GetEntities().Select(e => e.SaveGameState()).ToList()
+        };
+
+        return saveData;
+    }
+
+    [Serializable]
+    public class SaveData
+    {
+        public int playerIndexInActors;
+        public List<Actor.SaveData> actors;
+        public List<Entity.SaveData> items;
     }
 }

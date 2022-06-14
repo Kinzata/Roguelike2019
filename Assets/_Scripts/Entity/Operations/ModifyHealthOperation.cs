@@ -3,6 +3,7 @@ public class ModifyHealthOperation : Operation
     public IntRange ModifierRange;
 
     public ModifyHealthOperation(IntRange range){
+        name = "ModifyHealthOperation";
         ModifierRange = range;
     }
 
@@ -47,5 +48,20 @@ public class ModifyHealthOperation : Operation
         }
 
         return result;
+    }
+
+    public override object SaveGameState()
+    {
+        return new SaveData
+        {
+            min = ModifierRange.min,
+            max = ModifierRange.max
+        };
+    }
+
+    public class SaveData
+    {
+        public int min;
+        public int max;
     }
 }

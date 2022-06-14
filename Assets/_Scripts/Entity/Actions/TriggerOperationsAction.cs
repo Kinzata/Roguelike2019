@@ -17,15 +17,15 @@ public class TriggerOperationsAction : Action
             if (itemComponent != null)
             {
                 var itemAction = new UseItemAction(actor, itemComponent);
-                if ( itemComponent is RangedItem rItem )
+                if ( itemComponent.range > 0 )
                 {
                     result.NextAction = new RangedTargetAction(actor, itemAction);
                     result.status = ActionResultType.TurnDeferred;
                     result.TransitionToStateOnSuccess = GameState.Global_ActionHandlerDeferred;
                     result.NextAction.targetData = new TargetData
                     {
-                        range = rItem.range,
-                        radius = rItem.radius
+                        range = itemComponent.range,
+                        radius = itemComponent.radius
                     };
 
                     result.AppendMessage(new Message($"Pick a <color=#{ColorUtility.ToHtmlStringRGB(Color.red)}>target</color>...", null));

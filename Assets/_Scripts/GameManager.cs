@@ -1,21 +1,18 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 public class GameManager : MonoBehaviour
 {
-  
     public PlayerStatInterface statText;
     public InventoryInterface inventoryInterface;
-    private GameState _gameState;
     private MessageLog _log;
-    private int _currentActorId = 0;
     private Action _deferredAction;
-
-    public Level currentLevel;
-    public LevelDataScriptableObject levelData;
-
+    private GameState _gameState;
+    
     [Header("Systems")]
     private FieldOfViewSystem fovSystem;
 
@@ -24,6 +21,13 @@ public class GameManager : MonoBehaviour
     private float calculatedCamerageAdjustment = 0;
     public float viewportWidth = 10f;
     public int playerViewDistance = 10;
+
+    [Header("Instance Data")]
+    private int _currentActorId = 0;
+
+    public Level currentLevel;
+    public LevelDataScriptableObject levelData;
+
 
     void Start()
     {
@@ -36,7 +40,15 @@ public class GameManager : MonoBehaviour
         {
             // Load game
         }
+        else
+        {
+            InitNewGame();
+        }
 
+    }
+
+    public void InitNewGame()
+    {
         currentLevel = new Level();
         currentLevel.BuildLevel(levelData);
 
@@ -265,6 +277,11 @@ public class GameManager : MonoBehaviour
             {
                 GameSceneManager.Instance.MainMenu();
             }
+
+            if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.S))
+            {
+                SaveGameState();
+            }
         }
 
         else if (_gameState == GameState.Global_InventoryMenu )
@@ -289,6 +306,7 @@ public class GameManager : MonoBehaviour
                 _deferredAction = null;
             }
         }
+
     }
 
     public void HandleContextSensitiveAction()
@@ -400,5 +418,27 @@ public class GameManager : MonoBehaviour
         calculatedCamerageAdjustment = value / 2;
 
         return calculatedCamerageAdjustment;
+    }
+
+    public void SaveGameState()
+    {
+        var location = Application.persistentDataPath + "/roguelike_save_data.json";
+        Debug.Log(location);
+
+        var saveData = new SaveData
+        {
+            currentActorId = _currentActorId,
+            currentLevel = currentLevel.SaveGameState()
+        };
+
+        File.WriteAllText(location, Newtonsoft.Json.JsonConvert.SerializeObject(saveData, formatting: Newtonsoft.Json.Formatting.Indented));
+
+        Debug.Log("Saved!");
+    }
+
+    private class SaveData
+    {
+        public int currentActorId;
+        public Level.SaveData currentLevel;
     }
 }
