@@ -30,9 +30,9 @@ public class Room
                rect.yMin <= other.rect.yMax && rect.yMax >= other.rect.yMin);
     }
 
-    public CellPosition GetRandomLocation(){
-        var x = Random.Range((int)rect.xMin+1, (int)rect.xMax);
-        var y = Random.Range((int)rect.yMin+1, (int)rect.yMax);
+    public CellPosition GetRandomLocation(System.Random ranGen){
+        var x = ranGen.Next((int)rect.xMin+1, (int)rect.xMax);
+        var y = ranGen.Next((int)rect.yMin+1, (int)rect.yMax);
         return new CellPosition(x,y);
     }
 

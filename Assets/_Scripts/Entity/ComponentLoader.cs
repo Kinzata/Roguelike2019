@@ -18,6 +18,8 @@ public static class ComponentLoader
                 return Item.LoadGameState(entity, JsonConvert.DeserializeObject<Item.SaveData>(data));
             case "AiComponent":
                 return AiComponent.LoadGameState(entity, JsonConvert.DeserializeObject<AiComponent.SaveData>(data));
+            case "Stairs":
+                return Stairs.LoadGameState(entity, JsonConvert.DeserializeObject<Stairs.SaveData>(data));
             default: return false;
         }
     }

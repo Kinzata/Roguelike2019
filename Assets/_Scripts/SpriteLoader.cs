@@ -28,6 +28,8 @@ public class SpriteLoader : MonoBehaviour
     {
         switch (type)
         {
+            case SpriteType.LiterallyNothing:
+                return spriteSheet[0];
             case SpriteType.Nothing:
                 return spriteSheet[167];
             case SpriteType.Soldier_Sword:
@@ -58,6 +60,8 @@ public class SpriteLoader : MonoBehaviour
                 return spriteSheet[880];
             case SpriteType.Item_Scroll_Two:
                 return spriteSheet[881];
+            case SpriteType.Object_Stairs_Down:
+                return spriteSheet[194];
             default:
                 throw new System.Exception("Bad sprite sheet enum type.");
         }

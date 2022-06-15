@@ -178,6 +178,7 @@ public class GameManager : MonoBehaviour
     void ProcessTurnResults(ActionResult results)
     {
         foreach (var message in results.GetMessages()) { _log.AddMessage(message); }
+
         var deadEntities = results.GetEntityEvent("dead");
         if (deadEntities.Count() > 0)
         {
@@ -188,6 +189,16 @@ public class GameManager : MonoBehaviour
             {
                 TransitionFrom(_gameState);
                 TransitionTo(result.TransitionToStateOnSuccess);
+            }
+        }
+
+        var transition = results.GetEntityEvent("transition").FirstOrDefault();
+        if(transition != null)
+        {
+            var stairs = transition.gameObject.GetComponent<Stairs>();
+            if( stairs)
+            {
+                // Down a floor!
             }
         }
     }
@@ -228,8 +239,10 @@ public class GameManager : MonoBehaviour
                 ReportObjectsAtPosition(MouseUtilities.GetCellPositionAtMousePosition(currentLevel.GetMapDTO().GroundMap));
             }
 
+            // Movement
             HandleMovementKeys();
 
+            // Context Sensitive Actions
             if (Input.GetMouseButtonDown(1))
             {
                 HandleContextSensitiveAction();
@@ -242,7 +255,6 @@ public class GameManager : MonoBehaviour
                 var action = new WaitAction(player.actor);
                 player.actor.SetNextAction(action);
             }
-
 
             // MoveByPath
             if (Input.GetKeyDown(KeyCode.M) )
@@ -272,8 +284,16 @@ public class GameManager : MonoBehaviour
                 ProcessTurnResults(result);
             }
 
+            // Interact
+            if (Input.GetKeyDown(KeyCode.Period))
+            {
+                var player = currentLevel.GetPlayer();
+                var action = new InteractAction(player.actor, new TargetData { targetPosition = player.position });
+                player.actor.SetNextAction(action);
+            }
+
             // Back to main menu
-            if( Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.BackQuote))
+            if ( Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.BackQuote))
             {
                 GameSceneManager.Instance.MainMenu();
             }

@@ -9,7 +9,7 @@ public class TargetData
     public int range; // TODO
     public int radius;
 
-    public List<Entity> GetTargets(MapDTO mapDto, Func<Entity, bool> filter)
+    public List<Entity> GetTargets(MapDTO mapDto, Func<Entity, bool> filter, bool includeGround = false)
     {
         var targets = new List<Entity>();
         if( targetPosition == null )
@@ -22,6 +22,14 @@ public class TargetData
                 .GetEntities(targetPosition, radius)
                     .Where(e => filter(e))
                     .ToList();
+            if( includeGround)
+            {
+                targets.AddRange(mapDto.EntityFloorMap
+                    .GetEntities(targetPosition, radius)
+                        .Where(e => filter(e))
+                        .ToList()
+                );
+            }
         }
 
         return targets;

@@ -22,6 +22,8 @@ public class LevelBuilder
         passiveEntityMap = new EntityMap().Init(entityBackgroundTileMap, groundMap);
         
         MakeMiscMap(data);
+
+        PlaceStairsDown(data, ranGen);
     }
 
     public void GenerateEntities(LevelDataScriptableObject data, System.Random ranGen)
@@ -164,7 +166,27 @@ public class LevelBuilder
         }
     }
 
+    private void PlaceStairsDown(LevelDataScriptableObject data, System.Random ranGen)
+    {
+        var position = groundMap.rooms.First().GetRandomLocation(ranGen);
+        // Create stairs
 
+        var entity = Entity.CreateEntity().Init(
+            position,
+            SpriteType.Object_Stairs_Down,
+            new Color32(122,67, 12, 255),
+            blocks: false,
+            name: "stairs down"
+        );
+
+        entity.gameObject.AddComponent<Stairs>().owner = entity;
+
+        passiveEntityMap.AddEntity(entity);
+
+        // Remove grass at position
+        groundMap.GetTileAt(position).sprite = SpriteLoader.instance.LoadSprite(SpriteType.Nothing);
+        groundMap.GetTileAt(position).colorLight = Color.black;
+    }
 
     public IList<Entity> FillRoomsWithEntityActors(LevelDataScriptableObject data)
     {
@@ -194,7 +216,7 @@ public class LevelBuilder
 
         foreach (int i in 0.To(numMonsters))
         {
-            var position = room.GetRandomLocation();
+            var position = room.GetRandomLocation(new System.Random());
 
             var entityExistsAtPosition = entities
                                             .Where(e => e.position.x == position.x && e.position.y == position.y)
@@ -261,7 +283,7 @@ public class LevelBuilder
             numItems = data.GuaranteeItems.Count;
             foreach (int i in 0.To(numItems))
             {
-                var position = room.GetRandomLocation();
+                var position = room.GetRandomLocation(new System.Random());
 
                 var entityExistsAtPosition = entities
                                                 .Where(e => e.position.x == position.x && e.position.y == position.y)
@@ -279,7 +301,7 @@ public class LevelBuilder
         {
             foreach (int i in 0.To(numItems))
             {
-                var position = room.GetRandomLocation();
+                var position = room.GetRandomLocation(new System.Random());
 
                 var entityExistsAtPosition = entities
                                                 .Where(e => e.position.x == position.x && e.position.y == position.y)
