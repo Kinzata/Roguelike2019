@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 public class AiComponent : EntityComponent
 {
@@ -46,6 +44,25 @@ public class AiComponent : EntityComponent
             behavior = new Dictionary<string, object>() { { behavior.name, behavior.SaveGameState() } },
             previousBehavior = new Dictionary<string, object>() { { previousBehavior?.name ?? "None", previousBehavior?.SaveGameState() } }
         };
+    }
+
+    public static bool LoadGameState(Entity entity, SaveData data)
+    {
+        var component = entity.gameObject.AddComponent<AiComponent>();
+        component.owner = entity;
+
+        var kvp = data.behavior.First();
+        component.behavior = AiBehaviorLoader.LoadAiBehavior(kvp.Key, null, kvp.Value);
+        component.behavior.aiComponent = component;
+
+        kvp = data.previousBehavior.First();
+        component.previousBehavior = AiBehaviorLoader.LoadAiBehavior(kvp.Key, null, kvp.Value);
+        if (component.previousBehavior != null)
+        {
+            component.previousBehavior.aiComponent = component;
+        }
+
+        return true;
     }
 
     public class SaveData

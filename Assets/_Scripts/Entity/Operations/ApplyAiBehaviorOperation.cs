@@ -55,6 +55,18 @@ public class ApplyAiBehavorOperation : Operation
         };
     }
 
+    public static bool LoadGameState(Item item, SaveData data)
+    {
+        var operation = new ApplyAiBehavorOperation(new BasicMonsterAi());
+
+        operation.flavorMessages = data.messages.Select(m => Message.LoadGameState(m)).ToList();
+        var kvp = data.behaviorToApply.First();
+        operation.behaviorToApply = AiBehaviorLoader.LoadAiBehavior(kvp.Key, null, kvp.Value);
+        item.Operations.Add(operation);
+
+        return true;
+    }
+
     public class SaveData
     {
         public Dictionary<string, object> behaviorToApply;

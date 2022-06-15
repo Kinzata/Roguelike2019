@@ -119,7 +119,24 @@ public class Level
         return actionResult;
     }
 
+    private Dictionary<int, List<int>> GetExploredTileCoordinates()
+    {
+        var exploredCoords = new Dictionary<int, List<int>>();
+        foreach (var t in _groundMap.tiles)
+        {
+            if (t.isExplored)
+            {
+                if( !exploredCoords.ContainsKey(t.x))
+                {
+                    exploredCoords[t.x] = new List<int>();
+                }
 
+                exploredCoords[t.x].Add(t.y);
+            }
+        }
+
+        return exploredCoords;
+    }
     public SaveData SaveGameState()
     {
         var saveData = new SaveData
@@ -127,7 +144,8 @@ public class Level
             seed = seed,
             playerIndexInActors = _actors.FindIndex((a) => a == _player.actor),
             actors = _actors.Select(a => a.SaveGameState()).ToList(),
-            items = _entityMapBackground.GetEntities().Select(e => e.SaveGameState()).ToList()
+            items = _entityMapBackground.GetEntities().Select(e => e.SaveGameState()).ToList(),
+            exploredTileCoordinates = GetExploredTileCoordinates()
         };
 
         return saveData;
@@ -136,6 +154,7 @@ public class Level
     public void LoadGameState(SaveData data, LevelDataScriptableObject levelData)
     {
         var ranGen = new Random(data.seed.GetHashCode());
+        seed = data.seed;
 
         var levelBuilder = new LevelBuilder();
         this.levelData = levelData;
@@ -164,6 +183,15 @@ public class Level
 
         _player = _actors[data.playerIndexInActors].entity;
 
+        foreach ( var kvp in data.exploredTileCoordinates )
+        {
+            var x = (int)kvp.Key;
+            foreach ( var y in kvp.Value )
+            {
+                _groundMap.tiles[x, y].isExplored = true;
+            }
+        }
+
         RunVisibilitySystem();
     }
 
@@ -174,5 +202,6 @@ public class Level
         public int playerIndexInActors;
         public List<Actor.SaveData> actors;
         public List<Entity.SaveData> items;
+        public Dictionary<int, List<int>> exploredTileCoordinates;
     }
 }

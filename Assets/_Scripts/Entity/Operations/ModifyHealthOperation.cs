@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class ModifyHealthOperation : Operation
 {
     public IntRange ModifierRange;
@@ -57,6 +59,16 @@ public class ModifyHealthOperation : Operation
             min = ModifierRange.min,
             max = ModifierRange.max
         };
+    }
+
+    public static bool LoadGameState(Item item, SaveData data)
+    {
+        var range = ScriptableObject.CreateInstance<IntRange>().Init(data.min, data.max);
+        var operation = new ModifyHealthOperation(range);
+
+        item.Operations.Add(operation);
+
+        return true;
     }
 
     public class SaveData

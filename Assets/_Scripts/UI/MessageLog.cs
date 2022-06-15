@@ -24,6 +24,12 @@ public class Message
         };
     }
 
+    public static Message LoadGameState(SaveData data)
+    {
+        ColorUtility.TryParseHtmlString(data.color, out var loadedColor);
+        return new Message(data.text, loadedColor);
+    }
+
     public class SaveData
     {
         public string text;

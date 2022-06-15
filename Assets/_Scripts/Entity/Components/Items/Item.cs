@@ -1,8 +1,5 @@
-
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 public class Item : EntityComponent
 {
@@ -51,7 +48,26 @@ public class Item : EntityComponent
             flavorMessages = FlavorMessages.Select(m => m.SaveGameState()).ToList()
         };
     }
-    //GetComponents<EntityComponent>().ToDictionary(o => o.componentName, o => o.SaveGameState()) 
+
+    public static bool LoadGameState(Entity entity, SaveData data)
+    {
+        var component = entity.gameObject.AddComponent<Item>();
+        component.owner = entity;
+
+        component.Description = data.description;
+        component.range = data.range;
+        component.radius = data.radius;
+
+        // Load operations
+        foreach (var kvp in data.operations)
+        {
+            OperationLoader.LoadOperation(kvp.Key, component, kvp.Value);
+        }
+
+        component.FlavorMessages = data.flavorMessages.Select(m => Message.LoadGameState(m)).ToList();
+
+        return true;
+    }
 
     public class SaveData
     {

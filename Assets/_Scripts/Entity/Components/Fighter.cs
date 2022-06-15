@@ -81,6 +81,16 @@ public class Fighter : EntityComponent
         };
     }
 
+    public static bool LoadGameState(Entity entity, SaveData data)
+    {
+        var component = entity.gameObject.AddComponent<Fighter>();
+        component.Init(data.maxHp, data.defensePower, data.offensePower);
+        component.hp = data.hp;
+        component.owner = entity;
+
+        return true;
+    }
+
     public class SaveData
     {
         public int maxHp;

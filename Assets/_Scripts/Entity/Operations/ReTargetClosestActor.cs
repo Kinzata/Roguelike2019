@@ -34,4 +34,13 @@ public class ReTargetClosestActorOperation : Operation
     {
         return null;
     }
+
+    public static bool LoadGameState(Item item, object data)
+    {
+        var operation = new ReTargetClosestActorOperation();
+
+        item.Operations.Add(operation);
+
+        return true;
+    }
 }

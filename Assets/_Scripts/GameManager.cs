@@ -465,6 +465,8 @@ public class GameManager : MonoBehaviour
 
         currentLevel.FinalSetup();
 
+        _currentActorId = data.currentActorId;
+
         Debug.Log("Loaded!");
     }
 

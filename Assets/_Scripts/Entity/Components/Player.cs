@@ -12,6 +12,13 @@ public class Player : EntityComponent {
         return new SaveData();
     }
 
+    public static bool LoadGameState(Entity entity, SaveData data)
+    {
+        var component = entity.gameObject.AddComponent<Player>();
+        component.owner = entity;
+        return true;
+    }
+
     public class SaveData
     {
 

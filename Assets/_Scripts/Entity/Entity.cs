@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 /**
 The Entity is just that, an entity.
@@ -94,6 +92,8 @@ public class Entity : MonoBehaviour
         spriteRenderer.sprite = sprite;
         spriteRenderer.color = color;
 
+        _spriteType = SpriteType.Remains_Bones;
+
         actionResult.AppendMessage(new Message("You died!", Color.red));
         return actionResult;
     }
@@ -109,6 +109,8 @@ public class Entity : MonoBehaviour
 
         spriteRenderer.sprite = sprite;
         spriteRenderer.color = color;
+
+        _spriteType = SpriteType.Remains_Skull;
 
         name = $"remains of {name.ToPronoun()}";
         blocks = false;
@@ -167,6 +169,10 @@ public class Entity : MonoBehaviour
         entity.Init(data.position, data.spriteType, loadedColor, data.blocks, data.name);
 
         // Load components
+        foreach( var kvp in data.components)
+        {
+            ComponentLoader.LoadComponent(kvp.Key, entity, kvp.Value);
+        }
 
         return entity;
     }

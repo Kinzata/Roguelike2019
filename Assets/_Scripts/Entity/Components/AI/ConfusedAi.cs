@@ -69,6 +69,29 @@ public class ConfusedAi : AiBehavior
         };
     }
 
+    public static ConfusedAi LoadGameState(Entity entity, SaveData data)
+    {
+        var ai = new ConfusedAi(data.turnLimit);
+
+        // TODO: This needs a refactor -- How to save this?  Are these defaults?
+        var color = new Color32(160, 34, 201, 255);
+        ai.switchTo = delegate (Entity delEntity, ActionResult result)
+        {
+            result.AppendMessage(new Message(
+                $"The {delEntity.GetColoredName()} is now {"confused".ColorMe(color)}", null
+                ));
+        };
+
+        ai.switchFrom = delegate (Entity delEntity, ActionResult result)
+        {
+            result.AppendMessage(new Message(
+                $"The {delEntity.GetColoredName()} is no longer {"confused".ColorMe(color)}", null
+                ));
+        };
+
+        return ai;
+    }
+
     public class SaveData
     {
         public int turnLimit;

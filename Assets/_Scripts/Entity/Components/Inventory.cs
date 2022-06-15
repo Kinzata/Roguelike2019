@@ -57,6 +57,22 @@ public class Inventory : EntityComponent
         };
     }
 
+    public static bool LoadGameState(Entity entity, SaveData data)
+    {
+        var component = entity.gameObject.AddComponent<Inventory>();
+        component.Init(data.capacity);
+        component.owner = entity;
+
+        foreach (var entityData in data.heldItems)
+        {
+            var itemEntity = Entity.LoadGameState(entityData);
+            var item = itemEntity.gameObject.GetComponent<Item>();
+            component.heldItems.Add(item);
+        }
+
+        return true;
+    }
+
     public class SaveData
     {
         public int capacity;
