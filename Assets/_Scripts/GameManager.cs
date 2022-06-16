@@ -60,6 +60,18 @@ public class GameManager : MonoBehaviour
         _log = FindObjectOfType<MessageLog>();
     }
 
+    public void ResetNewLevel()
+    {
+        player = worldManager.GetPlayer();
+        Camera.main.transform.position = new Vector3(player.position.x + calculatedCamerageAdjustment, player.position.y, Camera.main.transform.position.z);
+
+        _gameState = GameState.Global_LevelScene;
+
+        // Guarantee player's turn;
+        var id = worldManager.GetActors().IndexOf(player.actor);
+        _currentActorId = id;
+    }
+
     void Update()
     {
         player = worldManager.GetPlayer();
@@ -167,9 +179,11 @@ public class GameManager : MonoBehaviour
         if(transition != null)
         {
             var stairs = transition.gameObject.GetComponent<Stairs>();
-            if( stairs)
+            if( stairs )
             {
                 // Down a floor!
+                worldManager.NewLevelFrom(stairs);
+                ResetNewLevel();
             }
         }
     }

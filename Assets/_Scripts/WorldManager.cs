@@ -39,6 +39,25 @@ public class WorldManager
         EventManager.Instance.onTurnSuccess += OnTurnSuccessHandler;
     }
 
+    public void NewLevelFrom(Stairs stair)
+    {
+        currentLevel.TearDown();
+
+        var player = currentLevel.GetPlayer();
+
+        currentLevel = new Level();
+        currentLevel.BuildLevel(levelData);
+
+        player.position = currentLevel.GetEntryPosition();
+        player.transform.position = player.position.ToVector3Int();
+        currentLevel.SetPlayer(player);
+
+        fovSystem = new FieldOfViewSystem(currentLevel.GetMapDTO().GroundMap);
+        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
+
+        currentLevel.FinalSetup();
+    }
+
     public Entity GetPlayer()
     {
         return currentLevel.GetPlayer();
@@ -67,12 +86,12 @@ public class WorldManager
         fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
     }
 
-    public void OnPlayerEndTurnHandler()
+    private void OnPlayerEndTurnHandler()
     {
         RunFovSystem();
     }
 
-    public void OnTurnSuccessHandler()
+    private void OnTurnSuccessHandler()
     {
         currentLevel.OnTurnSuccess();
         RunVisibilitySystem();

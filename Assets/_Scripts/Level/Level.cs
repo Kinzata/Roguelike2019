@@ -54,6 +54,21 @@ public class Level
         return this;
     }
 
+    // Currently, this prevents multi level saving.  This should really save the floor, then destroy it
+    public void TearDown()
+    {
+        foreach( var entity in _entityMap.GetEntities().Where(e => e != _player) )
+        {
+            UnityEngine.GameObject.Destroy(entity.gameObject);
+        }
+
+        // Items are removed from this list when picked up.  So they will remain through to the next floor.
+        foreach (var entity in _entityMapBackground.GetEntities())
+        {
+            UnityEngine.GameObject.Destroy(entity.gameObject);
+        }
+    }
+
     public void FinalSetup()
     {
         RunVisibilitySystem();
