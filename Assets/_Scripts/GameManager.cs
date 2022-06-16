@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,20 +9,18 @@ public class GameManager : MonoBehaviour
     private MessageLog _log;
     private Action _deferredAction;
     private GameState _gameState;
-    
-    [Header("Systems")]
-    private FieldOfViewSystem fovSystem;
 
     [Header("Settings")]
     public float cameraAdjustmentPercent = 0.793f;
     private float calculatedCamerageAdjustment = 0;
     public float viewportWidth = 10f;
-    public int playerViewDistance = 10;
 
     [Header("Instance Data")]
     private int _currentActorId = 0;
 
-    public Level currentLevel;
+    public Entity player;
+
+    public WorldManager worldManager;
     public LevelDataScriptableObject levelData;
 
 
@@ -49,43 +44,33 @@ public class GameManager : MonoBehaviour
 
     public void InitNewGame()
     {
-        currentLevel = new Level();
-        currentLevel.BuildLevel(levelData);
+        worldManager = new WorldManager(levelData);
+        worldManager.InitNewGame();
 
-        // Build Player
-        var player = Entity.CreateEntity().Init(currentLevel.GetEntryPosition().Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player", blocks: true);
-        player.gameObject.AddComponent<Player>().owner = player;
-        player.gameObject.AddComponent<Fighter>().Init(30, 2, 5).owner = player;
-        player.gameObject.AddComponent<Inventory>().Init(capacity: 10).owner = player;
-
-        currentLevel.SetPlayer(player);
+        player = worldManager.GetPlayer();
 
         CalculateCameraAdjustment();
         SetDesiredScreenSize();
         Camera.main.transform.position = new Vector3(player.position.x + calculatedCamerageAdjustment, player.position.y, Camera.main.transform.position.z);
-
-        // Setup Systems
-        fovSystem = new FieldOfViewSystem(currentLevel.GetMapDTO().GroundMap);
-        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
 
         statText.SetPlayer(player);
         inventoryInterface.SetInventory(player.GetComponent<Inventory>());
 
         _gameState = GameState.Global_LevelScene;
         _log = FindObjectOfType<MessageLog>();
-
-        currentLevel.FinalSetup();
     }
 
     void Update()
     {
+        player = worldManager.GetPlayer();
+
         if( _gameState == GameState.Global_PlayerDead)
         {
             // Enable Game over screen or change states
         }
 
-        var actor = currentLevel.GetActors().ElementAt(_currentActorId);
-        if( actor.entity == currentLevel.GetPlayer())
+        var actor = worldManager.GetActors().ElementAt(_currentActorId);
+        if( actor.entity == player)
         {
             HandleUserInput();
             var turnResults = ProcessTurn();
@@ -95,8 +80,8 @@ public class GameManager : MonoBehaviour
         {
             for(int i = 1; i <= 5; i++)
             {
-                actor = currentLevel.GetActors().ElementAt(_currentActorId);
-                if (actor.entity == currentLevel.GetPlayer())
+                actor = worldManager.GetActors().ElementAt(_currentActorId);
+                if (actor.entity == player)
                 {
                     break;
                 }
@@ -104,11 +89,6 @@ public class GameManager : MonoBehaviour
                 ProcessTurnResults(turnResults);
             }
         }
-
-
-
-
-        //currentLevel.Update();
     }
 
     ActionResult ProcessTurn()
@@ -117,16 +97,14 @@ public class GameManager : MonoBehaviour
         if (_deferredAction != null) { return new ActionResult(); }
 
         ActionResult actionResult;
-        var actor = currentLevel.GetActors().ElementAt(_currentActorId);
-        var action = actor.GetAction(currentLevel.GetMapDTO());
+        var actor = worldManager.GetActors().ElementAt(_currentActorId);
+        var action = actor.GetAction(worldManager.GetMapDTO());
         var actionToTake = action;
         if (action == null) { return new ActionResult(); }
 
-        var player = currentLevel.GetPlayer();
-
         do
         {
-            actionResult = actionToTake.PerformAction(currentLevel.GetMapDTO());
+            actionResult = actionToTake.PerformAction(worldManager.GetMapDTO());
 
             if(actor.entity == player)
             {
@@ -152,16 +130,12 @@ public class GameManager : MonoBehaviour
 
         if (actionResult.status == ActionResultType.Success)
         {
-            _currentActorId = (_currentActorId + 1) % currentLevel.GetActors().Count();
+            _currentActorId = (_currentActorId + 1) % worldManager.GetActors().Count();
             if (actor.entity == player)
             {
-                fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
-                currentLevel.OnTurnSuccess();
+                EventManager.Instance.onPlayerEndTurn?.Invoke();
             }
-            if( currentLevel.GetActors().ElementAt(_currentActorId).entity == player)
-            {
-                currentLevel.RunVisibilitySystem();
-            }
+            EventManager.Instance.onTurnSuccess?.Invoke();
         }
 
         if (actionResult.status == ActionResultType.TurnDeferred)
@@ -169,11 +143,8 @@ public class GameManager : MonoBehaviour
             _deferredAction = actionToTake;
         }
 
-        currentLevel.RunVisibilitySystem();
-
         return actionResult;
     }
-
 
     void ProcessTurnResults(ActionResult results)
     {
@@ -182,7 +153,7 @@ public class GameManager : MonoBehaviour
         var deadEntities = results.GetEntityEvent("dead");
         if (deadEntities.Count() > 0)
         {
-            var result = currentLevel.HandleDeadEntities(deadEntities);
+            var result = worldManager.currentLevel.HandleDeadEntities(deadEntities);
             foreach (var message in result.GetMessages()) { _log.AddMessage(message); }
 
             if( result.TransitionToStateOnSuccess != GameState.Unspecified )
@@ -205,7 +176,7 @@ public class GameManager : MonoBehaviour
 
     private void ReportObjectsAtPosition(CellPosition pos)
     {
-        var map = currentLevel.GetMapDTO();
+        var map = worldManager.GetMapDTO();
         var entityNames = map.EntityMap.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
         var backgroundNames = map.EntityFloorMap.GetEntities().Where(e => e.position == pos).Select(e => e.GetColoredName());
 
@@ -223,7 +194,6 @@ public class GameManager : MonoBehaviour
 
     void SetMoveDirection(Vector2Int direction)
     {
-        var player = currentLevel.GetPlayer();
         CellPosition newPosition = new CellPosition(player.position.x + direction.x, player.position.y + direction.y);
         var action = new WalkAction(player.actor, new TargetData { targetPosition = newPosition });
         player.actor.SetNextAction(action);
@@ -236,7 +206,7 @@ public class GameManager : MonoBehaviour
             // Look Action
             if (Input.GetMouseButtonDown(0))
             {
-                ReportObjectsAtPosition(MouseUtilities.GetCellPositionAtMousePosition(currentLevel.GetMapDTO().GroundMap));
+                ReportObjectsAtPosition(MouseUtilities.GetCellPositionAtMousePosition(worldManager.GetMapDTO().GroundMap));
             }
 
             // Movement
@@ -251,7 +221,6 @@ public class GameManager : MonoBehaviour
             // Wait
             if (Input.GetKeyDown(KeyCode.Keypad5))
             {
-                var player = currentLevel.GetPlayer();
                 var action = new WaitAction(player.actor);
                 player.actor.SetNextAction(action);
             }
@@ -259,7 +228,6 @@ public class GameManager : MonoBehaviour
             // MoveByPath
             if (Input.GetKeyDown(KeyCode.M) )
             {
-                var player = currentLevel.GetPlayer();
                 var action = new DeferAction(player.actor, new WalkAlongPathAction(player.actor));
                 player.actor.SetNextAction(action);
             }
@@ -267,7 +235,6 @@ public class GameManager : MonoBehaviour
             // Pickup!
             if (Input.GetKeyDown(KeyCode.G))
             {
-                var player = currentLevel.GetPlayer();
                 var action = new PickupItemAction(player.actor);
                 player.actor.SetNextAction(action);
             }
@@ -279,7 +246,7 @@ public class GameManager : MonoBehaviour
                 TransitionTo(GameState.Global_InventoryMenu);
 
                 // Open inventory of player
-                _log.AddMessage(new Message($"{currentLevel.GetPlayer().actor.entity.GetColoredName()} opens their inventory...", null));
+                _log.AddMessage(new Message($"{player.actor.entity.GetColoredName()} opens their inventory...", null));
                 var result = inventoryInterface.DescribeInventory();
                 ProcessTurnResults(result);
             }
@@ -287,7 +254,6 @@ public class GameManager : MonoBehaviour
             // Interact
             if (Input.GetKeyDown(KeyCode.Period))
             {
-                var player = currentLevel.GetPlayer();
                 var action = new InteractAction(player.actor, new TargetData { targetPosition = player.position });
                 player.actor.SetNextAction(action);
             }
@@ -295,6 +261,7 @@ public class GameManager : MonoBehaviour
             // Back to main menu
             if ( Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.BackQuote))
             {
+                EventManager.Instance.Clear();
                 GameSceneManager.Instance.MainMenu();
             }
 
@@ -319,21 +286,19 @@ public class GameManager : MonoBehaviour
         else if ( _gameState == GameState.Global_ActionHandlerDeferred)
         {
             if( _deferredAction == null ) { _gameState = GameState.Global_LevelScene; return; }
-            if(_deferredAction.UpdateHandler(currentLevel.GetMapDTO()))
+            if(_deferredAction.UpdateHandler(worldManager.GetMapDTO()))
             {
-                var actor = currentLevel.GetActors().ElementAt(_currentActorId);
+                var actor = worldManager.GetActors().ElementAt(_currentActorId);
                 actor.SetNextAction(_deferredAction);
                 _deferredAction = null;
             }
         }
-
     }
 
     public void HandleContextSensitiveAction()
     {
-        var currentDto = currentLevel.GetMapDTO();
-        var cell = MouseUtilities.GetCellPositionAtMousePosition(currentLevel.GetMapDTO().GroundMap);
-        var player = currentLevel.GetPlayer();
+        var currentDto = worldManager.currentLevel.GetMapDTO();
+        var cell = MouseUtilities.GetCellPositionAtMousePosition(worldManager.currentLevel.GetMapDTO().GroundMap);
 
         var targetData = new TargetData { targetPosition = cell };
 
@@ -448,7 +413,7 @@ public class GameManager : MonoBehaviour
         var saveData = new SaveData
         {
             currentActorId = _currentActorId,
-            currentLevel = currentLevel.SaveGameState()
+            worldManager = worldManager.SaveGameState()
         };
 
         File.WriteAllText(location, Newtonsoft.Json.JsonConvert.SerializeObject(saveData, formatting: Newtonsoft.Json.Formatting.Indented));
@@ -464,26 +429,20 @@ public class GameManager : MonoBehaviour
 
         var data = Newtonsoft.Json.JsonConvert.DeserializeObject<SaveData>(fileContents);
 
-        currentLevel = new Level();
-        currentLevel.LoadGameState(data.currentLevel, levelData);
+        worldManager = new WorldManager(levelData);
+        worldManager.LoadGameState(data.worldManager);
 
-        var player = currentLevel.GetPlayer();
+        var player = worldManager.GetPlayer();
 
         CalculateCameraAdjustment();
         SetDesiredScreenSize();
         Camera.main.transform.position = new Vector3(player.position.x + calculatedCamerageAdjustment, player.position.y, Camera.main.transform.position.z);
-
-        // Setup Systems
-        fovSystem = new FieldOfViewSystem(currentLevel.GetMapDTO().GroundMap);
-        fovSystem.Run(new Vector2Int(player.position.x, player.position.y), playerViewDistance);
 
         statText.SetPlayer(player);
         inventoryInterface.SetInventory(player.GetComponent<Inventory>());
 
         _gameState = GameState.Global_LevelScene;
         _log = FindObjectOfType<MessageLog>();
-
-        currentLevel.FinalSetup();
 
         _currentActorId = data.currentActorId;
 
@@ -493,6 +452,6 @@ public class GameManager : MonoBehaviour
     private class SaveData
     {
         public int currentActorId;
-        public Level.SaveData currentLevel;
+        public WorldManager.SaveData worldManager;
     }
 }

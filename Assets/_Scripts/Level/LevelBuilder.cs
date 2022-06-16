@@ -418,7 +418,7 @@ public class LevelBuilder
 
         item.Operations.Add(
             new ModifyHealthOperation(
-                ScriptableObject.CreateInstance<IntRange>().Init(-16, -9)
+                ScriptableObject.CreateInstance<IntRange>().Init(-15, -9)
             ));
 
 
@@ -505,7 +505,7 @@ public class LevelBuilder
 
         item.Operations.Add(
            new ModifyHealthOperation(
-               ScriptableObject.CreateInstance<IntRange>().Init(-10, -16)
+               ScriptableObject.CreateInstance<IntRange>().Init(-15, -9)
            ));
 
         return entity;

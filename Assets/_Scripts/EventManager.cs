@@ -1,40 +1,28 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class EventManager : MonoBehaviour
 {
-    public static EventManager instance;
+    public static EventManager Instance;
 
-    private IDictionary<EventType, GameEvent> events =
-        new Dictionary<EventType, GameEvent>();
+    public delegate void OnPlayerEndTurn();
+    public OnPlayerEndTurn onPlayerEndTurn;
+
+    public delegate void OnTurnSuccess();
+    public OnTurnSuccess onTurnSuccess;
+
     void Awake()
     {
-        if (instance == null)
-            instance = this;
-        else if (instance != this)
+        if (Instance == null)
+            Instance = this;
+        else if (Instance != this)
             Destroy(gameObject);
 
         DontDestroyOnLoad(gameObject);
     }
 
-    public GameEvent GetGameEvent(EventType type)
+    public void Clear()
     {
-        GameEvent gameEvent;
-        events.TryGetValue(type, out gameEvent);
-
-        if (gameEvent == null)
-        {
-            gameEvent = ScriptableObject.CreateInstance<GameEvent>();
-            events.Add(type, gameEvent);
-        }
-
-        return gameEvent;
+        onPlayerEndTurn = null;
+        onTurnSuccess = null;
     }
-
-    public enum EventType
-    {
-        PlayerMove
-    }
-
 }
