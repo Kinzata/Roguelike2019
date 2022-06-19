@@ -20,9 +20,7 @@ public class GameManager : MonoBehaviour
 
     public Entity player;
 
-    public WorldManager worldManager;
-    public LevelDataScriptableObject levelData;
-
+    public DungeonManager worldManager;
 
     void Start()
     {
@@ -44,8 +42,10 @@ public class GameManager : MonoBehaviour
 
     public void InitNewGame()
     {
-        worldManager = new WorldManager(levelData);
-        worldManager.InitNewGame();
+        worldManager = new DungeonManager();
+        var dungeonString = worldManager.GenerateDungeonString();
+        Debug.Log(dungeonString);
+        worldManager.InitNewGame(dungeonString);
 
         player = worldManager.GetPlayer();
 
@@ -443,7 +443,7 @@ public class GameManager : MonoBehaviour
 
         var data = Newtonsoft.Json.JsonConvert.DeserializeObject<SaveData>(fileContents);
 
-        worldManager = new WorldManager(levelData);
+        worldManager = new DungeonManager();
         worldManager.LoadGameState(data.worldManager);
 
         var player = worldManager.GetPlayer();
@@ -466,6 +466,6 @@ public class GameManager : MonoBehaviour
     private class SaveData
     {
         public int currentActorId;
-        public WorldManager.SaveData worldManager;
+        public DungeonManager.SaveData worldManager;
     }
 }

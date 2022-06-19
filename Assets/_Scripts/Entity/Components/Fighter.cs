@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class Fighter : EntityComponent
 {
     public int maxHp;
@@ -47,6 +49,7 @@ public class Fighter : EntityComponent
 
         if( hp <= 0 ){
             actionResult.AppendEntityEvent("dead", owner);
+            TriggerOnDeath();
         }
 
         return actionResult;

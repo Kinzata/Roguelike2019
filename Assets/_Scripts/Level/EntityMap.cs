@@ -24,6 +24,11 @@ public class EntityMap
         return entities.Where(e => e.position.x == x && e.position.y == y && e.blocks).FirstOrDefault();
     }
 
+    public List<Entity> GetEntitiesAt(CellPosition position)
+    {
+        return entities.Where(e => e.position == position).ToList();
+    }
+
     public Entity GetPlayer()
     {
         return entities.Where(e => e.GetComponent<Player>() != null).Select(e => e).FirstOrDefault();

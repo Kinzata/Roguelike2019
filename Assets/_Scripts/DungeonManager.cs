@@ -1,25 +1,50 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WorldManager
+public class DungeonManager
 {
     public Level currentLevel;
-    public LevelDataScriptableObject levelData;
+    public DungeonLevelNode currentLevelNode;
 
     private FieldOfViewSystem fovSystem;
 
+    public string dungeonString;
+    public int floorCounter;
+    public string seed;
+    public System.Random ranGen;
+
     public int playerViewDistance = 10;
 
-    public WorldManager(LevelDataScriptableObject levelData)
+    public DungeonManager()
     {
-        this.levelData = levelData;
     }
 
-    public void InitNewGame()
+    public string GenerateDungeonString()
     {
+        // TODO: This needs to generate from the same seed.
+        return RewriteRule.Generate();
+    }
+
+    public void InitNewGame(string dungeonString, string seed = "")
+    {
+        this.dungeonString = dungeonString;
+        floorCounter = 1;
+
+        if (string.IsNullOrWhiteSpace(seed))
+        {
+            seed = DateTime.UtcNow.Ticks.ToString();
+        }
+
+        this.seed = seed;
+
+        currentLevelNode = BuildNodeMap(seed, dungeonString, 1);
+
+        ranGen = new System.Random(seed.GetHashCode());
+
         currentLevel = new Level();
-        currentLevel.BuildLevel(levelData);
+        currentLevel.BuildLevel(currentLevelNode);
 
         // Build Player
         var player = Entity.CreateEntity().Init(currentLevel.GetEntryPosition().Clone(), spriteType: SpriteType.Soldier_Sword, color: Color.green, name: "player", blocks: true);
@@ -45,8 +70,11 @@ public class WorldManager
 
         var player = currentLevel.GetPlayer();
 
+        floorCounter++;
+        currentLevelNode = currentLevelNode.nextNode;
+
         currentLevel = new Level();
-        currentLevel.BuildLevel(levelData);
+        currentLevel.BuildLevel(currentLevelNode);
 
         player.position = currentLevel.GetEntryPosition();
         player.transform.position = player.position.ToVector3Int();
@@ -97,18 +125,58 @@ public class WorldManager
         RunVisibilitySystem();
     }
 
+    public DungeonLevelNode BuildNodeMap(string seed, string dungeonString, int depth)
+    {
+        DungeonLevelNode firstNode = null;
+        DungeonLevelNode currentNode = null;
+
+        var nodeChar = this.dungeonString.ToCharArray()[depth - 1];
+        while( nodeChar != 'X')
+        {
+            var nodeSeed = seed + dungeonString.Substring(0, depth);
+            var node = new DungeonLevelNode(nodeSeed, depth, this.dungeonString.ToCharArray()[depth - 1]);
+            if (currentNode == null)
+            {
+                node.previousNode = null;
+                currentNode = node;
+                firstNode = node;
+            }
+            else
+            {
+                currentNode.nextNode = node;
+                node.previousNode = currentNode;
+                currentNode = node;
+            }
+            depth++;
+            nodeChar = this.dungeonString.ToCharArray()[depth - 1];
+        }
+
+        return firstNode;
+    }
+
     public SaveData SaveGameState()
     {
         return new SaveData
         {
+            seed = seed,
+            dungeonString = dungeonString,
+            floorCounter = floorCounter,
+            currentLevelNode = currentLevelNode.SaveGameState(true, true),
             currentLevel = currentLevel.SaveGameState()
         };
     }
 
     public void LoadGameState(SaveData data)
     {
+        seed = data.seed;
+        dungeonString = data.dungeonString;
+        floorCounter = data.floorCounter;
+
+        currentLevelNode = DungeonLevelNode.LoadGameState(data.currentLevelNode);
+
         currentLevel = new Level();
-        currentLevel.LoadGameState(data.currentLevel, levelData);
+        
+        currentLevel.LoadGameState(data.currentLevel, currentLevelNode);
 
         fovSystem = new FieldOfViewSystem(currentLevel.GetMapDTO().GroundMap);
         RunFovSystem();
@@ -121,6 +189,10 @@ public class WorldManager
 
     public class SaveData
     {
+        public string seed;
+        public string dungeonString;
+        public int floorCounter;
+        public DungeonLevelNode.SaveData currentLevelNode;
         public Level.SaveData currentLevel;
     }
 }

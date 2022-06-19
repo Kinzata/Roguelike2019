@@ -32,5 +32,9 @@ public class MainMenuController : MonoBehaviour
         {
             LoadGame();
         }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            Debug.Log(RewriteRule.Generate());
+        }
     }
 }

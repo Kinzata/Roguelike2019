@@ -17,31 +17,19 @@ public class Level
     public List<Actor> _actors;
     public Entity _player;
 
-    [NonSerialized]
-    public LevelDataScriptableObject levelData;
-
     public void Update()
     {
-        // Handle User Input (yes we're doing this elsewhere too, plan on fixing that)
-
     }
 
-    public Level BuildLevel(LevelDataScriptableObject levelData, string seed = "")
+    public Level BuildLevel(DungeonLevelNode node)
     {
-        if (string.IsNullOrWhiteSpace(seed))
-        {
-            seed = DateTime.UtcNow.Ticks.ToString();
-        }
-
-        this.seed = seed;
-
-        var ranGen = new Random(seed.GetHashCode());
-
         var levelBuilder = new LevelBuilder();
-        this.levelData = levelData;
 
-        levelBuilder.GenerateMap(levelData, ranGen);
-        levelBuilder.GenerateEntities(levelData, ranGen);
+        var ranGen = new System.Random(node.seed.GetHashCode());
+
+        levelBuilder.GenerateMap(node, ranGen);
+        levelBuilder.PlaceImportantObjects(node, ranGen);
+        levelBuilder.GenerateEntities(node.levelData, ranGen);
 
         _groundMap = levelBuilder.GetGroundMap();
         _entityMap = levelBuilder.GetEntityMap();
@@ -116,6 +104,7 @@ public class Level
     public ActionResult HandleDeadEntities(Entity[] deadEntities)
     {
         var actionResult = new ActionResult();
+
         foreach (var dead in deadEntities)
         {
             if (dead == _player)
@@ -156,7 +145,6 @@ public class Level
     {
         var saveData = new SaveData
         {
-            seed = seed,
             playerIndexInActors = _actors.FindIndex((a) => a == _player.actor),
             actors = _actors.Select(a => a.SaveGameState()).ToList(),
             items = _entityMapBackground.GetEntities().Select(e => e.SaveGameState()).ToList(),
@@ -166,14 +154,12 @@ public class Level
         return saveData;
     }
 
-    public void LoadGameState(SaveData data, LevelDataScriptableObject levelData)
+    public void LoadGameState(SaveData data, DungeonLevelNode node)
     {
-        var ranGen = new Random(data.seed.GetHashCode());
-        seed = data.seed;
+        var ranGen = new Random(node.seed.GetHashCode());
 
         var levelBuilder = new LevelBuilder();
-        this.levelData = levelData;
-        levelBuilder.GenerateMap(levelData, ranGen);
+        levelBuilder.GenerateMap(node, ranGen);
 
         _groundMap = levelBuilder.GetGroundMap();
         _entityMap = levelBuilder.GetEntityMap();
@@ -198,6 +184,8 @@ public class Level
 
         _player = _actors[data.playerIndexInActors].entity;
 
+        levelBuilder.PlaceImportantObjects(node, ranGen);
+
         foreach ( var kvp in data.exploredTileCoordinates )
         {
             var x = (int)kvp.Key;
@@ -213,7 +201,6 @@ public class Level
     [Serializable]
     public class SaveData
     {
-        public string seed;
         public int playerIndexInActors;
         public List<Actor.SaveData> actors;
         public List<Entity.SaveData> items;

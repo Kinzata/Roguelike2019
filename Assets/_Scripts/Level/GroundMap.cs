@@ -58,6 +58,11 @@ public class GroundMap
         }
     }
 
+    public Room GetRandomRoom(System.Random ranGen)
+    {
+        return rooms[ranGen.Next(0, rooms.Count)];
+    }
+
     public bool IsBlocked(int x, int y)
     {
         if (tiles[x, y].blocked)

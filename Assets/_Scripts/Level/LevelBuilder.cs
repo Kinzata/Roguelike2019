@@ -11,9 +11,9 @@ public class LevelBuilder
     public MiscMap miscMap;
     public List<Actor> actors;
 
-    public void GenerateMap(LevelDataScriptableObject data, System.Random ranGen)
+    public void GenerateMap(DungeonLevelNode node, System.Random ranGen)
     {
-        MakeMap(data, ranGen);
+        MakeMap(node.levelData, ranGen);
 
         var entityTileMap = GameObject.Find(TileMapType.EntityMap.Name()).GetComponent<Tilemap>();
         entityMap = new EntityMap().Init(entityTileMap, groundMap);
@@ -21,9 +21,15 @@ public class LevelBuilder
         var entityBackgroundTileMap = GameObject.Find(TileMapType.EntityMap_Background.Name()).GetComponent<Tilemap>();
         passiveEntityMap = new EntityMap().Init(entityBackgroundTileMap, groundMap);
         
-        MakeMiscMap(data);
+        MakeMiscMap(node.levelData);
+    }
 
-        PlaceStairsDown(data, ranGen);
+    public void PlaceImportantObjects(DungeonLevelNode node, System.Random ranGen)
+    {
+        if (node.nextNode != null)
+        {
+            PlaceStairsDown(node.nextNode, ranGen);
+        }
     }
 
     public void GenerateEntities(LevelDataScriptableObject data, System.Random ranGen)
@@ -41,7 +47,7 @@ public class LevelBuilder
         var groundTileMap = GameObject.Find(TileMapType.GroundMap.Name()).GetComponent<Tilemap>();
         groundMap = new GroundMap().Init(data.mapWidth, data.mapHeight, groundTileMap);
 
-        var rooms = MakeRooms(data.maxRooms, data.roomSizeRange, data.mapWidth, data.mapHeight, ranGen);
+        var rooms = MakeRooms(data, ranGen);
         groundMap.rooms = rooms.ToList();
         groundMap.UpdateNavigationMasks();
         Debug.Log("Rooms: " + rooms.Count());
@@ -98,19 +104,20 @@ public class LevelBuilder
         return actors;
     }
 
-    private IList<Room> MakeRooms(int maxRooms, IntRange roomSizeRange, int mapWidth, int mapHeight, System.Random ranGen)
+    private IList<Room> MakeRooms(LevelDataScriptableObject data, System.Random ranGen)
     {
         var rooms = new List<Room>();
         var counter = 0;
         var roomCounter = 0;
 
-        while (counter++ < maxRooms)
+        while (counter++ < data.maxRooms)
         {
-            var width = roomSizeRange.RandomValue(ranGen);
-            var height = roomSizeRange.RandomValue(ranGen);
+            
+            var width = ranGen.Next(data.minRoomSize, data.maxRoomSize);
+            var height = ranGen.Next(data.minRoomSize, data.maxRoomSize);
 
-            var x = ranGen.Next(0, mapWidth - width - 1);
-            var y = ranGen.Next(0, mapHeight - height - 1);
+            var x = ranGen.Next(0, data.mapWidth - width - 1);
+            var y = ranGen.Next(0, data.mapHeight - height - 1);
 
             var rect = new Rect(x, y, width, height);
             var newRoom = new Room(rect, groundMap);
@@ -166,22 +173,33 @@ public class LevelBuilder
         }
     }
 
-    private void PlaceStairsDown(LevelDataScriptableObject data, System.Random ranGen)
+    private void PlaceStairsDown(DungeonLevelNode node, System.Random ranGen)
     {
-        var position = groundMap.rooms.First().GetRandomLocation(ranGen);
+        var position = groundMap.GetRandomRoom(ranGen).GetRandomLocation(ranGen);
         // Create stairs
 
-        var entity = Entity.CreateEntity().Init(
-            position,
-            SpriteType.Object_Stairs_Down,
-            new Color32(122,67, 12, 255),
-            blocks: false,
-            name: "stairs down"
-        );
+        var stairsComponent = passiveEntityMap.GetEntitiesAt(position)
+            .Where(e => e.GetComponent<Stairs>())
+            .Select(e => e)
+            .FirstOrDefault()?.GetComponent<Stairs>();
 
-        entity.gameObject.AddComponent<Stairs>().owner = entity;
+        if(stairsComponent == null)
+        {
+            var entity = Entity.CreateEntity().Init(
+                position,
+                SpriteType.Object_Stairs_Down,
+                new Color32(122, 67, 12, 255),
+                blocks: false,
+                name: "stairs down"
+            );
 
-        passiveEntityMap.AddEntity(entity);
+            stairsComponent = entity.gameObject.AddComponent<Stairs>();
+            stairsComponent.owner = entity;
+
+            passiveEntityMap.AddEntity(entity);
+        }
+
+        stairsComponent.toNode = node;
 
         // Remove grass at position
         groundMap.GetTileAt(position).sprite = SpriteLoader.instance.LoadSprite(SpriteType.Nothing);
@@ -191,9 +209,13 @@ public class LevelBuilder
     public IList<Entity> FillRoomsWithEntityActors(LevelDataScriptableObject data)
     {
         IList<Entity> newEntities = new List<Entity>();
-        foreach (Room room in groundMap.rooms)
+        var numEnemies = Random.Range(data.minEnemiesOnFloor, data.maxEnemiesOnFloor + 1);
+        for(int i = 0; i < numEnemies; i++)
         {
-            newEntities = FillRoomWithEnemies(newEntities, room, data);
+            // Get random room
+            var room = groundMap.rooms[Random.Range(0, groundMap.rooms.Count)];
+            var entity = PlaceEnemyInRoom(newEntities, room);
+            newEntities.Add(entity);
         }
 
         return newEntities;
@@ -202,19 +224,33 @@ public class LevelBuilder
     public IList<Entity> FillRoomsWithPassiveEntities(LevelDataScriptableObject data)
     {
         IList<Entity> newEntities = new List<Entity>();
-        foreach (Room room in groundMap.rooms)
+        var numItems = Random.Range(data.minItemsOnFloor, data.maxItemsOnFloor + 1);
+        for (int i = 0; i < numItems; i++)
         {
-            newEntities = FillRoomWithItems(newEntities, room, data);
+            // Get random room
+            var room = groundMap.rooms[Random.Range(0, groundMap.rooms.Count)];
+
+            // Place standard items
+            var entity = PlaceItemInRoom(newEntities, room);
+            newEntities.Add(entity);
+        }
+
+        if( data.GuaranteeItems?.Count > 0)
+        {
+            foreach(var room in groundMap.rooms)
+            {
+                // Place Guaranteed items
+                newEntities = PlaceGuaranteedItems(newEntities, room, data);
+            }
         }
 
         return newEntities;
     }
 
-    private IList<Entity> FillRoomWithEnemies(IList<Entity> entities, Room room, LevelDataScriptableObject data)
+    private Entity PlaceEnemyInRoom(IList<Entity> entities, Room room)
     {
-        var numMonsters = Random.Range(data.minEnemiesInRoom, data.maxEnemiesInRoom + 1);
-
-        foreach (int i in 0.To(numMonsters))
+        Entity entity = null;
+        do
         {
             var position = room.GetRandomLocation(new System.Random());
 
@@ -222,15 +258,14 @@ public class LevelBuilder
                                             .Where(e => e.position.x == position.x && e.position.y == position.y)
                                             .Select(e => e)
                                             .Any();
-
             if (!entityExistsAtPosition)
             {
-                var entity = GenerateEnemy(position);
-                entities.Add(entity);
+                entity = GenerateEnemy(position);
             }
-        }
-
-        return entities;
+        } 
+        while (entity == null);
+        
+        return entity;
     }
 
     private Entity GenerateEnemy(CellPosition position)
@@ -274,49 +309,46 @@ public class LevelBuilder
         return entity;
     }
 
-    private IList<Entity> FillRoomWithItems(IList<Entity> entities, Room room, LevelDataScriptableObject data)
+    private IList<Entity> PlaceGuaranteedItems(IList<Entity> entities, Room room, LevelDataScriptableObject data)
     {
-        var numItems = Random.Range(0, data.maxItemsInRoom + 1);
-
-        if( data.GuaranteeItems.Count != 0)
+        var numItems = data.GuaranteeItems.Count;
+        foreach (int i in 0.To(numItems))
         {
-            numItems = data.GuaranteeItems.Count;
-            foreach (int i in 0.To(numItems))
+            var position = room.GetRandomLocation(new System.Random());
+
+            var entityExistsAtPosition = entities
+                                            .Where(e => e.position.x == position.x && e.position.y == position.y)
+                                            .Select(e => e)
+                                            .Any();
+
+            if (!entityExistsAtPosition)
             {
-                var position = room.GetRandomLocation(new System.Random());
-
-                var entityExistsAtPosition = entities
-                                                .Where(e => e.position.x == position.x && e.position.y == position.y)
-                                                .Select(e => e)
-                                                .Any();
-
-                if (!entityExistsAtPosition)
-                {
-                    var entity = GenerateItem(position, data.GuaranteeItems[i]);
-                    entities.Add(entity);
-                }
-            }
-        }
-        else
-        {
-            foreach (int i in 0.To(numItems))
-            {
-                var position = room.GetRandomLocation(new System.Random());
-
-                var entityExistsAtPosition = entities
-                                                .Where(e => e.position.x == position.x && e.position.y == position.y)
-                                                .Select(e => e)
-                                                .Any();
-
-                if (!entityExistsAtPosition)
-                {
-                    var entity = GenerateItem(position);
-                    entities.Add(entity);
-                }
+                var entity = GenerateItem(position, data.GuaranteeItems[i]);
+                entities.Add(entity);
             }
         }
 
         return entities;
+    }
+
+    private Entity PlaceItemInRoom(IList<Entity> entities, Room room)
+    {
+        Entity entity = null;
+        do
+        {
+            var position = room.GetRandomLocation(new System.Random());
+            var entityExistsAtPosition = entities
+                                            .Where(e => e.position.x == position.x && e.position.y == position.y)
+                                            .Select(e => e)
+                                            .Any();
+            if (!entityExistsAtPosition)
+            {
+                entity = GenerateItem(position);
+            }
+        }
+        while (entity == null);
+
+        return entity;
     }
 
     private Entity GenerateItem(CellPosition position)
